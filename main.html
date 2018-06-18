@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=UTF-8" name="Content-Type">
+        <link rel="stylesheet" href="style.css" />
+        <link href='https://fonts.googleapis.com/css?family=Raleway:400,700' rel='stylesheet' type='text/css'>
+        <title>Map testing</title>
+    </head>
+
+    <body>
+        <div id="content">
+<div class="splash">
+    
+    <h1>Generating fantasy maps</h1>
+<div class="note">
+    <script src="D3/d3.js"></script>
+
+<script src="js-priority-queue-master/priority-queue.js"></script>
+
+<style>
+    path, line {
+        fill: none;
+        stroke: black;
+        stroke-linecap: round;
+    }
+
+    .field {
+        stroke: none;
+        fill-opacity: 1.0;
+    }
+
+    .slope {
+        stroke-width: 1;
+    }
+
+    .river {
+        stroke-width: 2;
+    }
+
+    .coast {
+        stroke-width: 4;
+    }
+
+    .border {
+        stroke-width: 5;
+        stroke-dasharray: 4,4;
+        stroke-linecap: butt;
+    }
+
+    text {
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        color: black;
+        stroke: white;
+        stroke-width: 5;
+        stroke-linejoin: round;
+        paint-order: stroke;
+    }
+
+    text.region {
+        stroke-width:10;
+        font-variant: small-caps;
+    }
+
+    svg {
+        float: right;
+        background-color: white;
+    }
+</style>
+
+<script src="language.js"></script>
+
+<script src="terrain.js"></script>
+
+
+<div class="example" id="TerrainView">
+</div> </br>
+
+
+<script src="terraincontrols.js"></script>
+
+</div>
+</div>
+    </body>
+</html>
