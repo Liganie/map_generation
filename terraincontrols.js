@@ -3,6 +3,12 @@
     City name change at each sho/hide regions
     Export file is not correct
 */
+parseJsonAndUpdate();
+function parseJsonAndUpdate() {
+    var ioParamsStr = document.getElementById("ioParameters").value;
+    if (ioParamsStr.length > 0) TerrainParams = JSON.parse(ioParamsStr);
+    document.getElementById("ioParameters").innerHTML = JSON.stringify(TerrainParams, null, 2);
+}
 
 function saveSvg(svgEl, name) {
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");

@@ -1198,7 +1198,7 @@ var defaultParams = {
 //////////                    END OF ORIGINAL CODE                   ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
-function generateTerrain(params) {
+function generateIsland(params) {
     var mesh = generateGoodMesh(params.npts, params.extent);
     var h = add(
             //slope(mesh, randomVector(4)),
@@ -1241,7 +1241,7 @@ function drawTerrain(svg, render) {
 
 var TerrainParams = {
     extent: defaultExtent,
-    generator: generateTerrain,
+    generator: "generateIsland",
     //npts:  4096,
     //npts:  8192,
     npts: 16384,
@@ -1256,6 +1256,20 @@ var TerrainParams = {
     }
 }
 
+
+function getGenerator(params) {
+    var generator = generateCoast;
+    switch (params.generator) {
+        case "generateCoast":
+            generator = generateCoast;
+            break;
+        case "generateIsland":
+            generator = generateIsland;
+            break;
+    }
+    return generator;
+}
+
 function doTerrain(svg, params) {
     var render = {
         params: params
@@ -1267,7 +1281,7 @@ function doTerrain(svg, params) {
                         1000 * params.extent.width + ' ' + 
                         1000 * params.extent.height);
     svg.selectAll().remove();
-    render.h = params.generator(params);
+    render.h = getGenerator(params)(params);
     placeCities(render);
     renderTerrain(svg, render);
     return render;
