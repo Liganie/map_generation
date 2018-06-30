@@ -38,15 +38,11 @@ var TerrainSVG = TerrainDiv.insert("svg")
 // The different rendering terrainOptions
 var terrainOptions = {
     mapViewer: true,
-    cities: true,
-    heightmap: false,
-    erosion: false,
-    regions: false,
-    score: false,
-    colored: false,
+    cities: true
 };
 
 function TerrainDraw() {
+    if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
 
     // clear renderer
     TerrainSVG.selectAll('path').remove();
@@ -55,11 +51,13 @@ function TerrainDraw() {
     TerrainSVG.selectAll('text').remove();
 
     // render
-    if      (terrainOptions.heightmap) {visualizeVoronoi(TerrainSVG, terrainRender.h, 0);}
-    else if (terrainOptions.erosion)   {visualizeVoronoi(TerrainSVG, erosionRate(terrainRender.h));}
-    else if (terrainOptions.score)     {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
-    else if (terrainOptions.regions)   {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
-    else if (terrainOptions.colored)   {visualizeTerrain(TerrainSVG, terrainRender);}
+    var selected_view = d3.select('select').property('value');
+    if      (selected_view == 'Heightmap')  {visualizeVoronoi(TerrainSVG, terrainRender.h, 0);}
+    else if (selected_view == 'Slope')  {visualizeVoronoi(TerrainSVG, terrainRender.slope, 0, 10);}
+    else if (selected_view == 'Erosion')    {visualizeVoronoi(TerrainSVG, erosionRate(terrainRender.h));}
+    else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
+    else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
+    else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender);}
 
     if (terrainOptions.mapViewer) {
         drawPaths(TerrainSVG, 'coast', terrainRender.coasts);
@@ -75,56 +73,12 @@ function TerrainDraw() {
     }
 }
 
-var HeightmapBut = TerrainDiv.append("button")
-    .text(terrainOptions.heightmap ? "Hide Heightmap" : "Show Heightmap")
-    .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
-        if (terrainOptions.erosion || terrainOptions.regions || terrainOptions.score || terrainOptions.colored) return;
-        terrainOptions.heightmap = !terrainOptions.heightmap;
-        HeightmapBut.text(terrainOptions.heightmap ? "Hide Heightmap" : "Show Heightmap");
-        TerrainDraw();
-    });
-
-var ErosionBut = TerrainDiv.append("button")
-    .text(terrainOptions.erosion ? "Hide Erosion" : "Show Erosion")
-    .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
-        if (terrainOptions.heightmap || terrainOptions.regions || terrainOptions.score || terrainOptions.colored) return;
-        terrainOptions.erosion = !terrainOptions.erosion;
-        ErosionBut.text(terrainOptions.erosion ? "Hide Erosion" : "Show Erosion");
-        TerrainDraw();
-    });
-
-
-var RegionsBut = TerrainDiv.append("button")
-    .text(terrainOptions.regions ? "Hide Regions" : "Show Regions")
-    .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
-        if (terrainOptions.heightmap || terrainOptions.erosion || terrainOptions.score || terrainOptions.colored) return;
-        terrainOptions.regions = !terrainOptions.regions;
-        RegionsBut.text(terrainOptions.regions ? "Hide Regions" : "Show Regions");
-        TerrainDraw();
-    });
-
-var ScoreBut = TerrainDiv.append("button")
-    .text(terrainOptions.score ? "Hide City Score" : "Show City Score")
-    .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
-        if (terrainOptions.heightmap || terrainOptions.erosion || terrainOptions.regions || terrainOptions.colored) return;
-        terrainOptions.score = !terrainOptions.score;
-        ScoreBut.text(terrainOptions.score ? "Hide City Score" : "Show City Score");
-        TerrainDraw();
-    });
-
-var ColoredBut = TerrainDiv.append("button")
-    .text(terrainOptions.score ? "Hide Coloring" : "Show Coloring")
-    .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
-        if (terrainOptions.heightmap || terrainOptions.erosion || terrainOptions.regions || terrainOptions.score) return;
-        terrainOptions.colored = !terrainOptions.colored;
-        ColoredBut.text(terrainOptions.colored ? "Hide Coloring" : "Show Coloring");
-        TerrainDraw();
-    });
+var ViewCombobox = TerrainDiv.append("select")
+.on('change',TerrainDraw)
+.selectAll('option')
+    .data(["No coloring", "Heightmap", "Slope", "Erosion", "Regions", "City Score", "Coloring"]).enter()
+    .append('option')
+        .text(function (d) { return d; });
 
 TerrainDiv.append("button")
     .text("Generate new Map")
@@ -136,7 +90,6 @@ TerrainDiv.append("button")
 var TerrainBut = TerrainDiv.append("button")
     .text(terrainOptions.mapViewer ? "Hide Terrain" : "Show Terrain")
     .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
         terrainOptions.mapViewer = !terrainOptions.mapViewer;
         TerrainBut.text(terrainOptions.mapViewer ? "Hide Terrain" : "Show Terrain");
         TerrainDraw();
@@ -145,7 +98,6 @@ var TerrainBut = TerrainDiv.append("button")
 var CitiesBut = TerrainDiv.append("button")
     .text(terrainOptions.cities ? "Hide Cities" : "Show Cities")
     .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
         terrainOptions.cities = !terrainOptions.cities;
         CitiesBut.text(terrainOptions.cities ? "Hide Cities" : "Show Cities");
         TerrainDraw();
@@ -154,7 +106,6 @@ var CitiesBut = TerrainDiv.append("button")
 TerrainDiv.append("button")
     .text("Export Map")
     .on("click", function () {
-        if (terrainRender==null) terrainRender = doTerrain(TerrainSVG, TerrainParams);
         //TerrainSVG.selectAll("path.field").remove();
         saveSvg(TerrainSVG.node(), 'test.svg')
     });

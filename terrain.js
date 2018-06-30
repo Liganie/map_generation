@@ -1222,6 +1222,7 @@ function generateIsland(params) {
 }
 
 function renderTerrain(svg, render) {
+    render.slope = getSlope(render.h);
     render.rivers = getRivers(render.h, 0.01);
     render.coasts = contour(render.h, 0);
     render.terr = getTerritories(render);
