@@ -1,14 +1,51 @@
-/* TODO:
-    City name change at each show/hide cities
-    City name change at each sho/hide regions
-    Export file is not correct
-*/
-var markovInput = "adrien agnès alain albert alexandra alexandre alexis alice aline amandine amélie andré andrée angélique anne annemarie annick annie antoine arlette arnaud arthur audrey aurore aurélie aurélien baptiste benjamin benoît bernadette bernard bertrand brigitte bruno béatrice camille carole caroline catherine chantal charles chloé christelle christian christiane christine christophe claire clara claude claudine clémence clément colette coralie corinne cyril cécile cédric céline damien daniel danielle danièle david delphine denis denise didier dominique dominique dylan emma emmanuel emmanuelle enzo estelle fabien fabienne fabrice fanny florence florent florian francine francis franck françois françoise frédéric gabriel gaétan gaëlle geneviève georges georgette germaine ghislaine gilbert gilles ginette gisèle grégory guillaume guy gérard henri henriette hervé hugo huguette hélène inès irène isabelle jacqueline jacques janine jean jeanclaude jeanfrançois jeanlouis jeanluc jeanmarc jeanmarie jeanmichel jeanne jeannine jeanpaul jeanpierre jennifer jessica jocelyne jonathan joseph josette josé joël joëlle julie julien juliette justine jérôme karine kevin laetitia laura laure laurence laurent liliane lionel louis louise loïc luc lucas lucie lucien lucienne ludovic lydie léa madeleine magali manon marc marcel marcelle marguerite maria marie mariechristine marieclaude mariethérèse marine marion martine mathieu mathilde matthieu maurice maxime michaël michel micheline michelle michèle mickaël mireille mohamed monique morgane muriel myriam mélanie mélissa nadia nadine nathalie nicolas nicole noémie océane odette odile olivier pascal pascale patrice patricia patrick paul paulette pauline philippe pierre pierrette quentin raphaël raymond raymonde rené renée richard robert roger roland romain régine régis rémi rémy sabine sabrina samuel sandra sandrine sarah serge simon simone solange sonia sophie stéphane stéphanie suzanne sylvain sylvie sébastien séverine thierry thomas théo thérèse valentin valérie vanessa victor vincent virginie véronique william xavier yann yannick yves yvette yvonne éliane élisabeth élise élodie émilie éric étienne évelyne";
-var t_markov = new Markov(markovInput, 2, 0.01);
-function markovUpdate() {
-    document.getElementById("ioMarkov").innerHTML = t_markov.generate(25);
+////////////////////////////////////////////////////////////////////////////////////
+//////////                   MARKOV CHAINS HANDLING                  ///////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+var markovOrder;
+var markovPrior;
+var markovInput;
+
+function markovParamUpdate() {
+    var selectedValue = d3.selectAll('select').filter(function(d,i) {return i==0;}).property('value');
+    if (selectedOrder = "order") {markovrder = 2;}
+    else {markovOrder = parseInt(selectedValue);}
+    selectedValue = d3.selectAll('select').filter(function(d,i) {return i==1;}).property('value');
+    if (markovPrior = "prior") {markovPrior = 0.01;}
+    else {markovPrior = parseFlat(selectedValue);}
+    var selectedValue = d3.selectAll('select').filter(function(d,i) {return i==2;}).property('value');
+    markovInput = markovData[selectedValue];
 }
 
+function markovUpdate() {
+    markovParamUpdate();
+    var t_markov = new Markov(markovInput, markovOrder, markovPrior);
+    document.getElementById("oMarkov").innerHTML = t_markov.generate(25);
+}
+
+var markovDiv = d3.select("div#markovGeneratorView"); // Use to identify the script in the HTML document
+
+var markovOrderCombobox = markovDiv.append("select")
+.selectAll('option')
+    .data(["order", "1", "2", "3", "4", "5"]).enter()
+    .append('option')
+        .text(function (d) { return d; });
+
+var markovPriorCombobox = markovDiv.append("select")
+.selectAll('option')
+    .data(["prior", "0", "0.01", "0.02", "0.05", "0.1"]).enter()
+    .append('option')
+        .text(function (d) { return d; });
+
+var markovDataCombobox = markovDiv.append("select")
+.selectAll('option')
+    .data(Object.keys(markovData)).enter()
+    .append('option')
+        .text(function (d) { return d; });
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////                   PARAMETER HANDLING                      ///////////////
+////////////////////////////////////////////////////////////////////////////////////
 parseJsonAndUpdate();
 function parseJsonAndUpdate() {
     var ioParamsStr = document.getElementById("ioParameters").value;
@@ -16,6 +53,10 @@ function parseJsonAndUpdate() {
     document.getElementById("ioParameters").innerHTML = JSON.stringify(TerrainParams, null, 2);
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+//////////                TERRAIN GENERATION HANDLING                ///////////////
+////////////////////////////////////////////////////////////////////////////////////
+// Functions for terrain generation handling
 function saveSvg(svgEl, name) {
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
@@ -68,8 +109,8 @@ function TerrainDraw() {
     if (terrainOptions.mapViewer) {
         drawPaths(TerrainSVG, 'coast', terrainRender.coasts);
         visualizeSlopes(TerrainSVG, terrainRender);
-        if (terrainOptions.colored) drawPaths(TerrainSVG, 'riverBackground',  terrainRender.rivers, '#000000', 3);
-        drawPaths(TerrainSVG, 'river', terrainRender.rivers, terrainOptions.colored ? '#00b6dd': '#000000');
+        if (selected_view == 'Coloring') drawPaths(TerrainSVG, 'riverBackground',  terrainRender.rivers, '#000000', 3);
+        drawPaths(TerrainSVG, 'river', terrainRender.rivers, selected_view == 'Coloring' ? '#00b6dd': '#000000');
     }
 
     if (terrainOptions.cities) {

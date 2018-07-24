@@ -1,0 +1,44 @@
+City name change at each show/hide cities
+Export file is not correct
+	Current issue is due to the custom style in the main page
+		they need to be passed down in the drawPath function at least
+		Cities etc needs to be handled properly as well
+		Need a proper way to handle it from the code
+Renderer needs to be improved to not regenerate everything each time
+Code should be made using proper import for clean dependecies if possible
+Code should be better separated
+	grid generation
+	terrain generation
+	citites generation
+	rendering
+Try a different type of name generation using markov chains
+	Prior could be use
+	Prior need to be properly done when not in dictionnary
+	Define sevaral languages, potentially with different prior, min max length etc
+Try different type of generator
+	using polygons
+	using noise
+Add biomes to the mix
+	Potentially based on a wind model
+	Base on slopes
+		beaches close to the sea
+		flat terrain will be plains
+		"plant" trees in plain and see them grow depending on water and random spread
+Add posibility to change water, terrain, biome and elevevation color, potentially per region
+Change the city creation to contain more city types
+Change the city generation to be population / region based instead of capital based
+Change the region generation to be of different sizes or contain more than one big city (but only one capital)
+Try to be able to hide paramter window in a foldable fashion
+Create a layout closer to a proper webpage
+	generate different subpage to test the different components independently
+		Index shall be for random map only
+		Page for name generation (potentially all)
+		Page for grid generation?
+		Page for terrain only generation
+		Page for cities placement
+		Page for biomes testing
+Fix the terrain generator to be able to used multiple time the same elements
+Add lakes
+Makes rivers grow bigger as they get longer
+Add different cultures into the game, one per region
+Add different prefix or suffix to names depending on the cultur (dungon/fort for instance)
