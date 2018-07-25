@@ -970,6 +970,17 @@ function terrCenter(h, terr, city, landOnly) {
     return [x/n, y/n];
 }
 
+function getName(params, lang, key) {
+    var generator = params.nameGenerator;
+
+    if (generator == "Markov") {
+        return lang.generate(1);
+    }
+    else{
+        return makeName(lang, 'city');
+    }
+}
+
 function drawLabels(svg, render) {
     var params = render.params;
     var h = render.h;
@@ -977,7 +988,7 @@ function drawLabels(svg, render) {
     var cities = render.cities;
     var nterrs = render.params.nterrs;
     var avoids = [render.rivers, render.coasts, render.borders];
-    var lang = makeRandomLanguage();
+    var lang = getNameGenerator(params);
     var citylabels = [];
     function penalty(label) {
         var pen = 0;
@@ -1016,7 +1027,7 @@ function drawLabels(svg, render) {
     for (var i = 0; i < cities.length; i++) {
         var x = h.mesh.vxs[cities[i]][0];
         var y = h.mesh.vxs[cities[i]][1];
-        var text = makeName(lang, 'city');
+        var text = getName(params, lang, 'city');
         var size = i < nterrs ? params.fontsizes.city : params.fontsizes.town;
         var sx = 0.65 * size/1000 * text.length;
         var sy = size/1000;
@@ -1080,7 +1091,7 @@ function drawLabels(svg, render) {
     var reglabels = [];
     for (var i = 0; i < nterrs; i++) {
         var city = cities[i];
-        var text = makeName(lang, 'region');
+        var text = getName(params, lang, 'region');
         var sy = params.fontsizes.region / 1000;
         var sx = 0.6 * text.length * sy;
         var lc = terrCenter(h, terr, city, true);
@@ -1148,6 +1159,7 @@ function drawLabels(svg, render) {
         .raise();
 
 }
+
 function drawMap(svg, render) {
     render.rivers = getRivers(render.h, 0.01);
     render.coasts = contour(render.h, 0);
@@ -1242,7 +1254,8 @@ function drawTerrain(svg, render) {
 
 var TerrainParams = {
     extent: defaultExtent,
-    generator: "generateIsland",
+    terrainGenerator: "Island",
+    nameGenerator: "Markov",
     //npts:  4096,
     //npts:  8192,
     npts: 16384,
@@ -1258,13 +1271,27 @@ var TerrainParams = {
 }
 
 
-function getGenerator(params) {
+function getNameGenerator(params) {
+    var generator = makeRandomLanguage();
+    switch (params.nameGenerator) {
+        case "Markov":
+            generator = new Markov();
+            break;
+        case "Mewo":
+            generator = makeRandomLanguage();
+            break;
+    }
+    return generator;
+}
+
+
+function getTerrainGenerator(params) {
     var generator = generateCoast;
-    switch (params.generator) {
-        case "generateCoast":
+    switch (params.terrainGenerator) {
+        case "Coast":
             generator = generateCoast;
             break;
-        case "generateIsland":
+        case "Island":
             generator = generateIsland;
             break;
     }
@@ -1282,7 +1309,7 @@ function doTerrain(svg, params) {
                         1000 * params.extent.width + ' ' + 
                         1000 * params.extent.height);
     svg.selectAll().remove();
-    render.h = getGenerator(params)(params);
+    render.h = getTerrainGenerator(params)(params);
     placeCities(render);
     renderTerrain(svg, render);
     return render;
