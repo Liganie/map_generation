@@ -4,17 +4,12 @@ Export file is not correct
 		they need to be passed down in the drawPath function at least
 		Cities etc needs to be handled properly as well
 		Need a proper way to handle it from the code
-Renderer needs to be improved to not regenerate everything each time
 Code should be made using proper import for clean dependecies if possible
 Code should be better separated
 	grid generation
 	terrain generation
 	citites generation
 	rendering
-Try a different type of name generation using markov chains
-	Prior could be use
-	Prior need to be properly done when not in dictionnary
-	Define sevaral languages, potentially with different prior, min max length etc
 Try different type of generator
 	using polygons
 	using noise
