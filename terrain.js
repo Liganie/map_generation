@@ -1,5 +1,15 @@
 "use strict";
 
+var colorSchemes = {
+    default: { water: "#00b6dd", dirt: "#c9ae7b", mountains: "#ffffff" },
+    desert:  { water: "#3399ff", dirt: "#ffe066", mountains: "#b37700" },
+    forest:  { water: "#000066", dirt: "#009900", mountains: "#003300" },
+    plains:  { water: "#6699ff", dirt: "#99e699", mountains: "#663300" },
+    rocks:   { water: "#9999ff", dirt: "#595959", mountains: "#d9d9d9" },
+    tundra:  { water: "#6699ff", dirt: "#e6f2ff", mountains: "#ffffff" },
+    vulcano: { water: "#ff8000", dirt: "#8d8d8d", mountains: "#1a001a" }
+}
+
 function runif(lo, hi) {
     return lo + Math.random() * (hi - lo);
 }
@@ -747,12 +757,14 @@ function visualizeVoronoi(svg, field, lo, hi) {
 
     svg.selectAll('path.field')
         .attr('d', makeD3Path)
+        .style("stroke", "none")    // set the stroke width
+        .style("fill-opacity", 1.0)    // set the stroke width
         .style('fill', function (d, i) {
             return d3.interpolateViridis(mappedvals[i]);
         });
 }
 
-function visualizeVoronoiAsTerrain(svg, field) {
+/*function visualizeVoronoiAsTerrain(svg, field, params) {
     var tris = svg.selectAll('path.field').data(field.mesh.tris)
     tris.enter()
         .append('path')
@@ -765,14 +777,14 @@ function visualizeVoronoiAsTerrain(svg, field) {
         .attr('d', makeD3Path)
         .style("stroke-width", 5)    // set the stroke width
         .style('stroke', function (d, i) {
-            return field[i] >= 0 ? '#c9ae7b': '#00b6dd';
+            return field[i] >= 0 ? params.colors.dirt: params.colors.water;
         })
         .style('fill', function (d, i) {
-            return field[i] >= 0 ? '#c9ae7b': '#00b6dd';
+            return field[i] >= 0 ? params.colors.dirt: params.colors.water;
         });
-}
+}*/
 
-function visualizeTerrain(svg, render) {
+function visualizeTerrain(svg, render, params) {
 
     var polygons = contour(render.h,0);
     var terrainData = [[[-1,-1],[-1,1],[1,1],[1,-1]]];
@@ -791,7 +803,7 @@ function visualizeTerrain(svg, render) {
     svg.selectAll('path.field')
         .attr('d', makeD3Path)
         .style('fill', function (d, i) {
-            return i > 0 ? '#c9ae7b': '#00b6dd';
+            return i > 0 ? params.colors.dirt: params.colors.water;
         });
 
 
@@ -801,7 +813,7 @@ function visualizeTerrain(svg, render) {
     var color = d3.scaleLinear()
       .domain([0, 0.5])
       .interpolate(d3.interpolateHcl)
-      .range([d3.rgb("#c9ae7b"), d3.rgb('#ffffff')]);
+      .range([d3.rgb(params.colors.dirt), d3.rgb(params.colors.mountains)]);
     var tris_shading = svg.selectAll('path.field_shading').data(render.h.mesh.tris)
     tris_shading.enter()
         .append('path')
@@ -827,9 +839,8 @@ function visualizeDownhill(h) {
     drawPaths('river', links);
 }
 
-function drawPaths(svg, cls, paths, color, strokeSize) {
-    color = color || '#000000';
-    var customColor = color != '#000000';
+function drawPaths(svg, cls, paths, stroke_color, strokeSize) {
+    stroke_color = stroke_color || 'none';
 
     var paths = svg.selectAll('path.' + cls).data(paths)
     paths.enter()
@@ -840,7 +851,19 @@ function drawPaths(svg, cls, paths, color, strokeSize) {
     svg.selectAll('path.' + cls)
         .attr('d', makeD3Path)
         .style("stroke-width", strokeSize)
-        .style('stroke', color);
+        .style('stroke', stroke_color)
+        .style('fill', 'none')
+        .style('stroke-linecap', 'round');
+
+    // Dirty fix for border
+    if(cls == 'border') {
+        svg.selectAll('path.' + cls)
+            .style("stroke-dasharray", [4,4])
+            .style('stroke-linecap', 'butt')
+            .style('stroke-alignment', 'inner')
+            .style('stroke-position', 'inner')
+            .style('stroke-location', 'inner');
+    }
 }
 
 function visualizeSlopes(svg, render) {
@@ -885,10 +908,14 @@ function visualizeSlopes(svg, render) {
     lines.exit()
             .remove();
     svg.selectAll('line.slope')
+        .style('stroke-width', 1)
+        .style('fill', 'none')
+        .style('stroke', 'black')
+        .style('stroke-linecap', 'round')
         .attr('x1', function (d) {return 1000*d[0][0]})
         .attr('y1', function (d) {return 1000*d[0][1]})
         .attr('x2', function (d) {return 1000*d[1][0]})
-        .attr('y2', function (d) {return 1000*d[1][1]})
+        .attr('y2', function (d) {return 1000*d[1][1]});
 }
 
 
@@ -1144,6 +1171,7 @@ function drawLabels(svg, render) {
             width:sx
         });
     }
+
     texts = svg.selectAll('text.region').data(reglabels);
     texts.enter()
         .append('text')
@@ -1155,8 +1183,21 @@ function drawLabels(svg, render) {
         .attr('y', function (d) {return 1000*d.y})
         .style('font-size', function (d) {return 1000*d.size})
         .style('text-anchor', 'middle')
+        .style('font-variant', 'small-caps')
         .text(function (d) {return d.text})
         .raise();
+
+    // Pure vizual modifications
+    svg.selectAll('text')
+        .style("font-family", ["Palatino Linotype", "Book Antiqua", "Palatino", "serif"])
+        .style('color', 'black')
+        .style('stroke', 'white')
+        .style('stroke-width', 5)
+        .style('stroke-linejoin', 'round')
+        .style('paint-order', 'stroke')
+        .style('stroke-linecap', 'butt');
+    svg.selectAll('text.region')
+        .style('stroke-width', 10);
 
 }
 
@@ -1165,9 +1206,9 @@ function drawMap(svg, render) {
     render.coasts = contour(render.h, 0);
     render.terr = getTerritories(render);
     render.borders = getBorders(render);
-    drawPaths(svg, 'river', render.rivers);
-    drawPaths(svg, 'coast', render.coasts);
-    drawPaths(svg, 'border', render.borders);
+    drawPaths(svg, 'river', render.rivers, 'black', 2);
+    drawPaths(svg, 'coast', render.coasts, 'black', 4);
+    drawPaths(svg, 'border', render.borders, 'black', 5);
     visualizeSlopes(svg, render);
     visualizeCities(svg, render);
     drawLabels(svg, render);
@@ -1244,9 +1285,9 @@ function renderTerrain(svg, render) {
 }
 
 function drawTerrain(svg, render) {
-    drawPaths(svg, 'river', render.rivers);
-    drawPaths(svg, 'coast', render.coasts);
-    drawPaths(svg, 'border', render.borders);
+    drawPaths(svg, 'river', render.rivers, 'black', 2);
+    drawPaths(svg, 'coast', render.coasts, 'black', 4);
+    drawPaths(svg, 'border', render.borders, 'black', 5);
     visualizeSlopes(svg, render);
     visualizeCities(svg, render);
     drawLabels(svg, render);
@@ -1256,17 +1297,19 @@ var TerrainParams = {
     extent: defaultExtent,
     terrainGenerator: "Island",
     nameGenerator: "Markov",
-    //npts:  4096,
-    //npts:  8192,
     npts: 16384,
-    //npts: 32768,
-    //npts: 65536,
     ncities: 15,
     nterrs: 5,
     fontsizes: {
         region: 40,
         city: 25,
         town: 20
+    },
+    colors: {
+        template: 'random',
+        water: '#00b6dd',
+        dirt: '#c9ae7b',
+        mountains: '#ffffff'
     }
 }
 
@@ -1298,6 +1341,20 @@ function getTerrainGenerator(params) {
     return generator;
 }
 
+function getColors(params) {
+    if(params.colors.template in colorSchemes) {
+        params.colors.water = colorSchemes[params.colors.template].water;
+        params.colors.dirt = colorSchemes[params.colors.template].dirt;
+        params.colors.mountains = colorSchemes[params.colors.template].mountains;
+    } else if (params.colors.template == 'random') {
+        var key = Object.keys(colorSchemes)[~~(Math.random() * Object.keys(colorSchemes).length)];
+        params.colors.water = colorSchemes[key].water;
+        params.colors.dirt = colorSchemes[key].dirt;
+        params.colors.mountains = colorSchemes[key].mountains;
+    }
+    return params;
+}
+
 function doTerrain(svg, params) {
     var render = {
         params: params
@@ -1312,5 +1369,8 @@ function doTerrain(svg, params) {
     render.h = getTerrainGenerator(params)(params);
     placeCities(render);
     renderTerrain(svg, render);
+
+    params = getColors(params);
+
     return render;
 }

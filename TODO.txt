@@ -1,9 +1,8 @@
+Prio 1
+	biomes
+
+Coast shading
 City name change at each show/hide cities
-Export file is not correct
-	Current issue is due to the custom style in the main page
-		they need to be passed down in the drawPath function at least
-		Cities etc needs to be handled properly as well
-		Need a proper way to handle it from the code
 Code should be made using proper import for clean dependecies if possible
 Code should be better separated
 	grid generation
@@ -23,6 +22,7 @@ Add biomes to the mix
 		flat terrain will be plains
 		"plant" trees in plain and see them grow depending on water and random spread
 Add posibility to change water, terrain, biome and elevevation color, potentially per region
+Add the posibility to change to different colors schemes
 Change the city creation to contain more city types
 Change the city generation to be population / region based instead of capital based
 Change the region generation to be of different sizes or contain more than one big city (but only one capital)

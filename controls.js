@@ -80,7 +80,9 @@ var terrainRender = null;
 var TerrainSVG = TerrainDiv.insert("svg")
         .attr("height", 750)
         .attr("width", 750)
-        .attr("viewBox", "-500 -500 1000 1000");
+        .attr("viewBox", "-500 -500 1000 1000")
+        .style('float', 'right')
+        .style('background-color', 'white');
 
 // The different rendering terrainOptions
 var terrainOptions = {
@@ -136,19 +138,19 @@ function TerrainDraw() {
         else if (selected_view == 'Erosion')    {visualizeVoronoi(TerrainSVG, erosionRate(terrainRender.h));}
         else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
         else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
-        else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender);}
+        else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, TerrainParams);}
     }
 
     if (terrainOptions.mapViewer && terrainOptions.drawTrigger != 'Cities') {
-        drawPaths(TerrainSVG, 'coast', terrainRender.coasts);
+        drawPaths(TerrainSVG, 'coast', terrainRender.coasts, 'black', 4);
         visualizeSlopes(TerrainSVG, terrainRender);
-        if (selected_view == 'Coloring') drawPaths(TerrainSVG, 'river_background',  terrainRender.rivers, '#000000', 3);
-        drawPaths(TerrainSVG, 'river', terrainRender.rivers, selected_view == 'Coloring' ? '#00b6dd': '#000000');
+        if (selected_view == 'Coloring') drawPaths(TerrainSVG, 'river_background',  terrainRender.rivers, 'black', 3);
+        drawPaths(TerrainSVG, 'river', terrainRender.rivers, selected_view == 'Coloring' ? TerrainParams.colors.water: 'black', 2);
     }
 
     if (terrainOptions.cities && 
            !( (!terrainOptions.mapViewer && terrainOptions.drawTrigger == 'Terrain') || (terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') ) ) {
-        drawPaths(TerrainSVG, 'border', terrainRender.borders);
+        drawPaths(TerrainSVG, 'border', terrainRender.borders, 'black', 5);
         visualizeCities(TerrainSVG, terrainRender);
         drawLabels(TerrainSVG, terrainRender);
     }
