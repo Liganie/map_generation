@@ -11,7 +11,7 @@ var colorSchemes = {
 }
 
 function runif(lo, hi) {
-    return lo + Math.random() * (hi - lo);
+    return lo + seededRand() * (hi - lo);
 }
 
 var rnorm = (function () {
@@ -50,7 +50,7 @@ function generatePoints(n, extent) {
     extent = extent || defaultExtent;
     var pts = [];
     for (var i = 0; i < n; i++) {
-        pts.push([(Math.random() - 0.5) * extent.width, (Math.random() - 0.5) * extent.height]);
+        pts.push([(seededRand() - 0.5) * extent.width, (seededRand() - 0.5) * extent.height]);
     }
     return pts;
 }
@@ -266,7 +266,7 @@ function mountains(mesh, n, r) {
     r = r || 0.05;
     var mounts = [];
     for (var i = 0; i < n; i++) {
-        mounts.push([mesh.extent.width * (Math.random() - 0.5), mesh.extent.height * (Math.random() - 0.5)]);
+        mounts.push([mesh.extent.width * (seededRand() - 0.5), mesh.extent.height * (seededRand() - 0.5)]);
     }
     var newvals = zero(mesh);
     for (var i = 0; i < mesh.vxs.length; i++) {
@@ -283,7 +283,7 @@ function mountainsCentered(mesh, n, d, r) {
     r = r || 0.05;
     var mounts = [];
     for (var i = 0; i < n; i++) {
-        mounts.push([mesh.extent.width * (Math.random() - 0.5) * d, mesh.extent.height * (Math.random() - 0.5) * d]);
+        mounts.push([mesh.extent.width * (seededRand() - 0.5) * d, mesh.extent.height * (seededRand() - 0.5) * d]);
     }
     var newvals = zero(mesh);
     for (var i = 0; i < mesh.vxs.length; i++) {
@@ -1347,7 +1347,7 @@ function getColors(params) {
         params.colors.dirt = colorSchemes[params.colors.template].dirt;
         params.colors.mountains = colorSchemes[params.colors.template].mountains;
     } else if (params.colors.template == 'random') {
-        var key = Object.keys(colorSchemes)[~~(Math.random() * Object.keys(colorSchemes).length)];
+        var key = Object.keys(colorSchemes)[~~(seededRand() * Object.keys(colorSchemes).length)];
         params.colors.water = colorSchemes[key].water;
         params.colors.dirt = colorSchemes[key].dirt;
         params.colors.mountains = colorSchemes[key].mountains;

@@ -101,7 +101,7 @@ function Markov(input, order, prior) {
   this.cache = Object.create(null);
   if(input == null) {
     var keys = Object.keys(markovData);
-    var key = keys[Math.floor(Math.random() * keys.length)];
+    var key = keys[Math.floor(seededRand() * keys.length)];
     input = markovData[key];
   }
   this.order = order || 3;
@@ -126,7 +126,7 @@ Markov.prototype.nextLetter = function(key, prior){
   var order = key.length;
   if (key == "alphabet") order = 0;
   var next;
-  var value = Math.random() * (1 + prior);
+  var value = seededRand() * (1 + prior);
   
   // being here means that we are using the prior
   if (value < prior) {

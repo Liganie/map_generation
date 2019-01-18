@@ -39,3 +39,7 @@ Fix the terrain generator to be able to used multiple time the same elements
 Add lakes
 Makes rivers grow bigger as they get longer
 Add different cultures into the game, one per region
+
+long term:
+	possibility to drag and drop cities or other feature unto the map
+	possibility to edit the map

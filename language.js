@@ -14,7 +14,7 @@ function shuffled(list) {
 
 function choose(list, exponent) {
     exponent = exponent || 1;
-    return list[Math.floor(Math.pow(Math.random(), exponent) * list.length)];
+    return list[Math.floor(Math.pow(seededRand(), exponent) * list.length)];
 }
 
 function randrange(lo, hi) {
@@ -22,7 +22,7 @@ function randrange(lo, hi) {
         hi = lo;
         lo = 0;
     }
-    return Math.floor(Math.random() * (hi - lo)) + lo;
+    return Math.floor(seededRand() * (hi - lo)) + lo;
 }
 
 function join(list, sep) {
@@ -57,7 +57,7 @@ function makeSyllable(lang) {
             var ptype = lang.structure[i];
             if (lang.structure[i+1] == '?') {
                 i++;
-                if (Math.random() < 0.5) {
+                if (seededRand() < 0.5) {
                     continue;
                 }
             }
@@ -143,19 +143,19 @@ function makeName(lang, key) {
     lang.definite = lang.definite || getMorpheme(lang, 'the');
     while (true) {
         var name = null;
-        if (Math.random() < 0.5) {
+        if (seededRand() < 0.5) {
             name = capitalize(getWord(lang, key));
         } else {
-            var w1 = capitalize(getWord(lang, Math.random() < 0.6 ? key : ''));
-            var w2 = capitalize(getWord(lang, Math.random() < 0.6 ? key : ''));
+            var w1 = capitalize(getWord(lang, seededRand() < 0.6 ? key : ''));
+            var w2 = capitalize(getWord(lang, seededRand() < 0.6 ? key : ''));
             if (w1 == w2) continue;
-            if (Math.random() > 0.5) {
+            if (seededRand() > 0.5) {
                 name = join([w1, w2], lang.joiner);
             } else {
                 name = join([w1, lang.genitive, w2], lang.joiner);
             }
         }
-        if (Math.random() < 0.1) {
+        if (seededRand() < 0.1) {
             name = join([lang.definite, name], lang.joiner);
         }
 
