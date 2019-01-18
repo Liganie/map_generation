@@ -10,7 +10,7 @@ var colorSchemes = {
     vulcano: { water: "#ff8000", dirt: "#8d8d8d", mountains: "#1a001a" }
 }
 
-function runif(lo, hi) {
+function randRangeFloat(lo, hi) {
     return lo + seededRand() * (hi - lo);
 }
 
@@ -26,8 +26,8 @@ var rnorm = (function () {
         var x2 = 0;
         var w = 2.0;
         while (w >= 1) {
-            x1 = runif(-1, 1);
-            x2 = runif(-1, 1);
+            x1 = randRangeFloat(-1, 1);
+            x2 = randRangeFloat(-1, 1);
             w = x1 * x1 + x2 * x2;
         }
         w = Math.sqrt(-2 * Math.log(w) / w);
@@ -211,7 +211,7 @@ function cone(mesh, slope) {
 }
 
 function pike(mesh, slope) {
-    var center = [runif(-0.15, 0.15), runif(-0.15, 0.15)];
+    var center = [randRangeFloat(-0.15, 0.15), randRangeFloat(-0.15, 0.15)];
     return mesh.map(function (x) {
         return (1 - Math.pow(Math.pow(center[0] - x[0], 2) + Math.pow(center[1] - x[1], 2), 0.5)) * slope;
     });
@@ -883,9 +883,9 @@ function visualizeSlopes(svg, render) {
         }
         s /= nbs.length;
         s2 /= nbs.length;
-        //if (Math.abs(s) < runif(0.1, 0.4)) continue;
-        if (Math.abs(s) < runif(0.4, 0.8)) continue;
-        var l = r * runif(1, 2) * (1 - 0.2 * Math.pow(Math.atan(s), 2)) * Math.exp(s2/100);
+        //if (Math.abs(s) < randRangeFloat(0.1, 0.4)) continue;
+        if (Math.abs(s) < randRangeFloat(0.4, 0.8)) continue;
+        var l = r * randRangeFloat(1, 2) * (1 - 0.2 * Math.pow(Math.atan(s), 2)) * Math.exp(s2/100);
         var x = h.mesh.vxs[i][0];
         var y = h.mesh.vxs[i][1];
         if (Math.abs(l*s) > 2 * r) {
@@ -969,15 +969,15 @@ function generateCoast(params) {
     var mesh = generateGoodMesh(params.npts, params.extent);
     var h = add(
             slope(mesh, randomVector(4)),
-            cone(mesh, runif(-1, -1)),
+            cone(mesh, randRangeFloat(-1, -1)),
             mountains(mesh, 50)
             );
     for (var i = 0; i < 10; i++) {
         h = relax(h);
     }
     h = peaky(h);
-    h = doErosion(h, runif(0, 0.1), 5);
-    h = setSeaLevel(h, runif(0.2, 0.6));
+    h = doErosion(h, randRangeFloat(0, 0.1), 5);
+    h = setSeaLevel(h, randRangeFloat(0.2, 0.6));
     h = fillSinks(h);
     h = cleanCoast(h, 3);
     return h;
@@ -1267,8 +1267,8 @@ function generateIsland(params) {
         h = relax(h);
     }
     h = peaky(h);
-    h = doErosion(h, runif(0, 0.1), 5);
-    h = setSeaLevel(h, runif(0.4, 0.6));
+    h = doErosion(h, randRangeFloat(0, 0.1), 5);
+    h = setSeaLevel(h, randRangeFloat(0.4, 0.6));
     h = fillSinks(h);
     h = cleanCoast(h, 3);
     return h;

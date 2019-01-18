@@ -5,7 +5,7 @@ function shuffled(list) {
     }
     for (var i = list.length - 1; i > 0; i--) {
         var tmp = newlist[i];
-        var j = randrange(i);
+        var j = randRangeInt(i);
         newlist[i] = newlist[j];
         newlist[j] = tmp;
     }
@@ -15,14 +15,6 @@ function shuffled(list) {
 function choose(list, exponent) {
     exponent = exponent || 1;
     return list[Math.floor(Math.pow(seededRand(), exponent) * list.length)];
-}
-
-function randrange(lo, hi) {
-    if (hi == undefined) {
-        hi = lo;
-        lo = 0;
-    }
-    return Math.floor(seededRand() * (hi - lo)) + lo;
 }
 
 function join(list, sep) {
@@ -84,7 +76,7 @@ function getMorpheme(lang, key) {
     var extras = 10;
     if (key) extras = 1;
     while (true) {
-        var n = randrange(list.length + extras);
+        var n = randRangeInt(list.length + extras);
         if (list[n]) return list[n];
         var morph = makeSyllable(lang);
         var bad = false;
@@ -102,10 +94,10 @@ function getMorpheme(lang, key) {
 }
 
 function makeWord(lang, key) {
-    var nsylls = randrange(lang.minsyll, lang.maxsyll + 1);
+    var nsylls = randRangeInt(lang.minsyll, lang.maxsyll + 1);
     var w = '';
     var keys = [];
-    keys[randrange(nsylls)] = key;
+    keys[randRangeInt(nsylls)] = key;
     for (var i = 0; i < nsylls; i++) {
         w += getMorpheme(lang, keys[i]);
     }
@@ -118,7 +110,7 @@ function getWord(lang, key) {
     var extras = 3;
     if (key) extras = 2;
     while (true) {
-        var n = randrange(ws.length + extras);
+        var n = randRangeInt(ws.length + extras);
         var w = ws[n];
         if (w) {
             return w;
@@ -222,9 +214,9 @@ function makeRandomLanguage() {
     lang.restricts = ressets[2].res;
     lang.cortho = choose(corthsets, 2).orth;
     lang.vortho = choose(vorthsets, 2).orth;
-    lang.minsyll = randrange(1, 3);
+    lang.minsyll = randRangeInt(1, 3);
     if (lang.structure.length < 3) lang.minsyll++;
-    lang.maxsyll = randrange(lang.minsyll + 1, 7);
+    lang.maxsyll = randRangeInt(lang.minsyll + 1, 7);
     lang.joiner = choose('   -');
     return lang;
 }

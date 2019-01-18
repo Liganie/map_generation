@@ -16,4 +16,20 @@ function seededRandom (seed = (new Date()).getTime()) {
     return mb32( hash(seed) );
 }
 
+function randRangeInt(lo, hi) {
+    if (hi == undefined) {
+        hi = lo;
+        lo = 0;
+    }
+    return Math.floor(seededRand() * (hi - lo)) + lo;
+}
+
+function randRangeFloat(lo, hi) {
+    if (hi == undefined) {
+        hi = lo;
+        lo = 0;
+    }
+    return lo + seededRand() * (hi - lo);
+}
+
 var seededRand = seededRandom();
