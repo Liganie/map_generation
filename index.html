@@ -14,29 +14,27 @@
 <div class="splash">
     
     <h1>Generating fantasy maps</h1>
-<div class="note">
-    <script src="D3/d3.js"></script>
+    <div class="note">
 
-<script src="js-priority-queue-master/priority-queue.js"></script>
+        <script src="D3/d3.js"></script>
+        <script src="js-priority-queue-master/priority-queue.js"></script>
 
+        <script src="utils.js"></script>
+        <script src="names/index.js"></script>
+        <script src="terrain/index.js"></script>
 
-<script src="seededRandom.js"></script>
-<script src="language.js"></script>
-<script src="markov.js"></script>
-<script src="terrain.js"></script>
+        <div class="example" id="parameterView">
+        <textarea id="ioParameters" rows="15" cols="50"></textarea>
+        </br>
+        <button type="button" onclick="parseJsonAndUpdate()">Apply new parameters</button>
+        </div> </br>
 
-<div class="example" id="parameterView">
-<textarea id="ioParameters" rows="15" cols="50"></textarea>
-</br>
-<button type="button" onclick="parseJsonAndUpdate()">Apply new parameters</button>
-</div> </br>
+        <div class="example" id="TerrainView">
+        </div> </br>
 
-<div class="example" id="TerrainView">
-</div> </br>
+        <script src="index_controls.js"></script>
 
-<script src="controls.js"></script>
-
-</div>
-</div>
+        </div>
+    </div>
     </body>
 </html>

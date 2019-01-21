@@ -13,21 +13,6 @@ function parseJsonAndUpdate() {
 //////////                TERRAIN GENERATION HANDLING                ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
 // Functions for terrain generation handling
-function saveSvg(svgEl, name) {
-    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    var svgData = svgEl.outerHTML;
-    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
-    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
-    var svgUrl = URL.createObjectURL(svgBlob);
-    var downloadLink = document.createElement("a");
-    downloadLink.href = svgUrl;
-    downloadLink.download = name;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-}
-
-// START OF THE ACTUAL CODE
 
 var TerrainDiv = d3.select("div#TerrainView"); // Use to identify the script in the HTML document
 //This contains all the info on the current map, along with what is needed for rendering

@@ -1,4 +1,5 @@
 Prio 1
+	clean up
 	biomes
 
 Coast shading -> through outline
