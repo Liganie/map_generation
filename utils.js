@@ -1,4 +1,23 @@
 ////////////////////////////////////////////////////////////////////////////////////
+//////////                     DETECT DEV CONFIG                     ///////////////
+////////////////////////////////////////////////////////////////////////////////////
+// This function can detect if the script is run locally or on a server
+// This is used to simplify debug and porting
+
+function initialize () {
+    switch(window.location.protocol) {
+       case 'file:':
+         //local file
+        seededRand = seededRandom(12345678);
+        if (typeof TerrainParams !== 'undefined') TerrainParams.npts = 2048;
+         break;
+       default: 
+         // we are on a server
+         seededRand = seededRandom();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
 //////////                   RANDOM NUMBER HANDLING                  ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
 // Javascript does not natively support seeding in Math.random()
@@ -7,6 +26,8 @@
 // Robustness could be improved by returning mb32( hash(seed++) )() each time instead of the mb32 object. It would then take twice as long to excecute
 
 function seededRandom (seed = (new Date()).getTime()) {
+    console.log('Seed is: '+seed);
+
     // Mulberry32, a fast high quality PRNG: https://gist.github.com/tommyettinger/46a874533244883189143505d203312c
     var mb32=s=>t=>(s=s+1831565813|0,t=Math.imul(s^s>>>15,1|s),t=t+Math.imul(t^t>>>7,61|t)^t,(t^t>>>14)>>>0)/2**32;
     // Better 32-bit integer hash function: https://burtleburtle.net/bob/hash/integer.html
@@ -31,9 +52,6 @@ function randRangeFloat(lo, hi) {
     }
     return lo + seededRand() * (hi - lo);
 }
-
-//var seededRand = seededRandom(123456);
-var seededRand = seededRandom(123456);
 
 var rnorm = (function () {
     var z2 = null;
@@ -70,6 +88,7 @@ function randomVector(scale) {
     return [scale * rnorm(), scale * rnorm()];
 }
 
+var seededRand;
 
 ////////////////////////////////////////////////////////////////////////////////////
 //////////                       DYNAMIC INCLUDE                     ///////////////

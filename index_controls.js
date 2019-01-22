@@ -1,3 +1,4 @@
+initialize(); //to ensure debug is possible
 
 ////////////////////////////////////////////////////////////////////////////////////
 //////////                   PARAMETER HANDLING                      ///////////////
@@ -109,6 +110,7 @@ var ViewCombobox = TerrainDiv.append("select")
 TerrainDiv.append("button")
     .text("Generate new Map")
     .on("click", function () {
+        if (terrainRender != null) seededRand = seededRandom();
         terrainRender = doTerrain(TerrainSVG, TerrainParams);
         terrainOptions.drawTrigger = 'None';
         TerrainDraw();

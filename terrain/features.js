@@ -68,6 +68,8 @@ function getRivers(h, limit) {
             links.push(link);
         }
     }
+    // We have the links for easy handling.
+    // We are now going to map the flux unto the proper path
 
     var flux_links = links; // a backup that will then be mached on the sorted array
     links = mergeSegments(links);
@@ -96,6 +98,20 @@ function getRivers(h, limit) {
         flux_links[f][1][1] = links[flux_links[f].i1][flux_links[f].j1][1]
     }
     links.flux = flux_links;
+
+    // Getting all the termination of the paths, as they end in sea
+    // This is used to clean the rendering
+    var endPoints = [];
+    for(var f1=0; f1<flux_links.length; f1++) {
+        for(var f2=0; f2<flux_links.length; f2++) {
+            if(f1 == f2) continue;
+            if(    flux_links[f1][1][0] == flux_links[f2][0][0] // if the ending of this link is the start of another
+                && flux_links[f1][1][1] == flux_links[f2][0][1]) break;
+        }
+        if(f2 == flux_links.length) endPoints[endPoints.length] = f1;
+    }
+    links.endPoints = endPoints;
+
     return links;
 }
 

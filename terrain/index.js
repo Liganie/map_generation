@@ -257,9 +257,9 @@ function visualizeSlopes(svg, render) {
 
 function visualizeRivers(svg, render) {
     var cls = 'river_background'
-    var rivers = render.rivers.flux;
+    var river_background = render.rivers.flux;
 
-    var paths = svg.selectAll('path.' + cls).data(rivers)
+    var paths = svg.selectAll('path.' + cls).data(river_background)
     paths.enter()
             .append('path')
             .classed(cls, true)
@@ -271,6 +271,14 @@ function visualizeRivers(svg, render) {
             .style('stroke', 'black')
             .style('fill', 'none')
             .style('stroke-linecap', 'round');
+
+    // we need to make the termination of the path longer in order to not see the background
+    var endPoints = render.rivers.endPoints;
+    var rivers = river_background;
+    for( var i=0; i<endPoints.length; i++) {
+        rivers[endPoints[i]][1][0] = rivers[endPoints[i]][1][0] + (rivers[endPoints[i]][1][0] - rivers[endPoints[i]][0][0])*0.25;
+        rivers[endPoints[i]][1][1] = rivers[endPoints[i]][1][1] + (rivers[endPoints[i]][1][1] - rivers[endPoints[i]][0][1])*0.25;
+    }
 
     cls = 'river'
     paths = svg.selectAll('path.' + cls).data(rivers)
@@ -382,8 +390,7 @@ var TerrainParams = {
     },
     terrainGenerator: "Island",
     nameGenerator: "Markov",
-    npts: 2048,
-    //npts: 16384,
+    npts: 16384,
     //npts: 32768,
     //npts: 65536,
     ncities: 15,
