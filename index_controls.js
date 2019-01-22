@@ -75,7 +75,8 @@ function TerrainDraw() {
     // render
     if(terrainOptions.drawTrigger == 'Coloring' || terrainOptions.drawTrigger == 'None') {
         if      (selected_view == 'Heightmap')  {visualizeVoronoi(TerrainSVG, terrainRender.h, 0);}
-        else if (selected_view == 'Slope')  {visualizeVoronoi(TerrainSVG, terrainRender.slope, 0, 10);}
+        else if (selected_view == 'Slope')      {visualizeVoronoi(TerrainSVG, terrainRender.slope, 0, 10);}
+        else if (selected_view == 'Flux')       {visualizeVoronoi(TerrainSVG, terrainRender.flux, 0, 0.01);}
         else if (selected_view == 'Erosion')    {visualizeVoronoi(TerrainSVG, erosionRate(terrainRender.h));}
         else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
         else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
@@ -85,8 +86,9 @@ function TerrainDraw() {
     if (terrainOptions.mapViewer && terrainOptions.drawTrigger != 'Cities') {
         drawPaths(TerrainSVG, 'coast', terrainRender.coasts, 'black', 4);
         visualizeSlopes(TerrainSVG, terrainRender);
-        if (selected_view == 'Coloring') drawPaths(TerrainSVG, 'river_background',  terrainRender.rivers, 'black', 3);
-        drawPaths(TerrainSVG, 'river', terrainRender.rivers, selected_view == 'Coloring' ? TerrainParams.colors.water: 'black', 2);
+        if (selected_view == 'Coloring') {visualizeRivers(TerrainSVG, terrainRender);}
+        else {drawPaths(TerrainSVG, 'river', terrainRender.rivers, 'black', 2);}
+        //
     }
 
     if (terrainOptions.cities && 
@@ -100,7 +102,7 @@ function TerrainDraw() {
 var ViewCombobox = TerrainDiv.append("select")
 .on('change',TerrainDrawColoring)
 .selectAll('option')
-    .data(["No coloring", "Heightmap", "Slope", "Erosion", "Regions", "City Score", "Coloring"]).enter()
+    .data(["No coloring", "Heightmap", "Slope", "Flux", "Erosion", "Regions", "City Score", "Coloring"]).enter()
     .append('option')
         .text(function (d) { return d; });
 

@@ -58,14 +58,45 @@ function getRivers(h, limit) {
         if (flux[i] > limit && h[i] > 0 && dh[i] >= 0) {
             var up = h.mesh.vxs[i];
             var down = h.mesh.vxs[dh[i]];
+            var link;
             if (h[dh[i]] > 0) {
-                links.push([up, down]);
+                link = [up, down];
             } else {
-                links.push([up, [(up[0] + down[0])/2, (up[1] + down[1])/2]]);
+                link = [up, [(up[0] + down[0])/2, (up[1] + down[1])/2]];
+            }
+            link.flux = Math.max(flux[i], flux[dh[i]]);
+            links.push(link);
+        }
+    }
+
+    var flux_links = links; // a backup that will then be mached on the sorted array
+    links = mergeSegments(links);
+
+    for(var f=0; f<flux_links.length; f++) { // looking for the correspondance
+        for(var i=0; i<links.length; i++) {
+            for(var j=0; j<links[i].length; j++) {
+                if(flux_links[f][0][0] == links[i][j][0] && flux_links[f][0][1] == links[i][j][1]) {
+                    flux_links[f].i0 = i;
+                    flux_links[f].j0 = j;
+                }
+                if(flux_links[f][1][0] == links[i][j][0] && flux_links[f][1][1] == links[i][j][1]) {
+                    flux_links[f].i1 = i;
+                    flux_links[f].j1 = j;
+                }
             }
         }
     }
-    return mergeSegments(links).map(relaxPath);
+
+    links = links.map(relaxPath);
+    for(var f=0; f<flux_links.length; f++) { // looking for the correspondance
+        links[flux_links[f].i1][flux_links[f].j1].flux = flux_links[f].flux;
+        flux_links[f][0][0] = links[flux_links[f].i0][flux_links[f].j0][0]
+        flux_links[f][0][1] = links[flux_links[f].i0][flux_links[f].j0][1]
+        flux_links[f][1][0] = links[flux_links[f].i1][flux_links[f].j1][0]
+        flux_links[f][1][1] = links[flux_links[f].i1][flux_links[f].j1][1]
+    }
+    links.flux = flux_links;
+    return links;
 }
 
 function getTerritories(render) {
@@ -222,6 +253,7 @@ function terrCenter(h, terr, city, landOnly) {
 
 function renderTerrain(render) {
     render.slope = getSlope(render.h);
+    render.flux = getFlux(render.h);
     render.rivers = getRivers(render.h, 0.01);
     render.coasts = contour(render.h, 0);
     render.terr = getTerritories(render);

@@ -70,6 +70,16 @@ function generateCoast(params) {
 //////////                       TERRAIN DISPLAY                     ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
+var colorSchemes = {
+    default: { water: "#00b6dd", dirt: "#c9ae7b", mountains: "#ffffff" },
+    desert:  { water: "#3399ff", dirt: "#ffe066", mountains: "#b37700" },
+    forest:  { water: "#000066", dirt: "#009900", mountains: "#003300" },
+    plains:  { water: "#6699ff", dirt: "#99e699", mountains: "#663300" },
+    rocks:   { water: "#9999ff", dirt: "#595959", mountains: "#d9d9d9" },
+    tundra:  { water: "#6699ff", dirt: "#e6f2ff", mountains: "#ffffff" },
+    vulcano: { water: "#ff8000", dirt: "#8d8d8d", mountains: "#1a001a" }
+}
+
 function visualizePoints(svg, pts) {
     var circle = svg.selectAll('circle').data(pts);
     circle.enter()
@@ -165,11 +175,6 @@ function visualizeTerrain(svg, render, params) {
 
 }
 
-function visualizeDownhill(h) {
-    var links = getRivers(h, 0.01);
-    drawPaths('river', links);
-}
-
 function drawPaths(svg, cls, paths, stroke_color, strokeSize) {
     stroke_color = stroke_color || 'none';
 
@@ -247,6 +252,39 @@ function visualizeSlopes(svg, render) {
         .attr('y1', function (d) {return 1000*d[0][1]})
         .attr('x2', function (d) {return 1000*d[1][0]})
         .attr('y2', function (d) {return 1000*d[1][1]});
+}
+
+
+function visualizeRivers(svg, render) {
+    var cls = 'river_background'
+    var rivers = render.rivers.flux;
+
+    var paths = svg.selectAll('path.' + cls).data(rivers)
+    paths.enter()
+            .append('path')
+            .classed(cls, true)
+            .attr('d', makeD3Path)
+            //.style("stroke-width", 15)
+            .style('stroke-width', function (d, i) {
+                return Math.sqrt(d.flux*400)+1; // min flux is 0.01 and shall provide 2px for the border and 1 for the fill. SQRT for volume -> radius convertion
+            })
+            .style('stroke', 'black')
+            .style('fill', 'none')
+            .style('stroke-linecap', 'round');
+
+    cls = 'river'
+    paths = svg.selectAll('path.' + cls).data(rivers)
+    paths.enter()
+            .append('path')
+            .classed(cls, true)
+            .attr('d', makeD3Path)
+            //.style("stroke-width", 15)
+            .style('stroke-width', function (d, i) {
+                return Math.sqrt(d.flux*400); // min flux is 0.01 and shall provide 2px for the border and 1 for the fill. SQRT for volume -> radius convertion
+            })
+            .style('stroke', render.params.colors.water)
+            .style('fill', 'none')
+            .style('stroke-linecap', 'round');
 }
 
 function visualizeContour(h, level) {
@@ -328,8 +366,6 @@ var defaultParams = {
     },
     generator: generateCoast,
     npts: 16384,
-    //npts: 32768,
-    //npts: 65536,
     ncities: 15,
     nterrs: 5,
     fontsizes: {
@@ -346,7 +382,10 @@ var TerrainParams = {
     },
     terrainGenerator: "Island",
     nameGenerator: "Markov",
-    npts: 16384,
+    npts: 2048,
+    //npts: 16384,
+    //npts: 32768,
+    //npts: 65536,
     ncities: 15,
     nterrs: 5,
     fontsizes: {

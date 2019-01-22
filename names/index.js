@@ -192,7 +192,7 @@ function drawLabels(svg, render) {
     svg.selectAll('text.city')
         .attr('x', function (d) {return 1000*d.x})
         .attr('y', function (d) {return 1000*d.y})
-        .style('font-size', function (d) {return d.size})
+        .style('font-size', function (d) {return d.size+'px'})
         .style('text-anchor', function (d) {return d.align})
         .text(function (d) {return d.text})
         .raise();
@@ -263,7 +263,7 @@ function drawLabels(svg, render) {
     svg.selectAll('text.region')
         .attr('x', function (d) {return 1000*d.x})
         .attr('y', function (d) {return 1000*d.y})
-        .style('font-size', function (d) {return 1000*d.size})
+        .style('font-size', function (d) {return 1000*d.size+'px'})
         .style('text-anchor', 'middle')
         .style('font-variant', 'small-caps')
         .text(function (d) {return d.text})
