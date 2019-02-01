@@ -2,6 +2,21 @@ Prio 1
 	clean up
 	biomes
 
+Need to create drawing function
+	Shall be able to specify textures for the fill
+	Add a notion of layer for the drawing
+Need a draw API
+	Function to Scale a set of paths with respect to a point
+	Function to draw a shape with a border / set a shapes
+Re organize everything
+	features
+		cities
+		mountains
+		rivers
+		borders
+	terrain
+		coast
+		terrain itself
 Coast shading -> through outline
 City name change at each show/hide cities
 	this could be a feature
@@ -42,7 +57,6 @@ Create a layout closer to a proper webpage
 		Page for biomes testing
 Fix the terrain generator to be able to used multiple time the same elements
 Add lakes
-Makes rivers grow bigger as they get longer
 Add different cultures into the game, one per region
 
 long term:

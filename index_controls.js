@@ -49,18 +49,17 @@ function TerrainDraw() {
     // clear renderer
     if( (terrainOptions.drawTrigger == 'Coloring' && selected_view != 'No coloring') || terrainOptions.drawTrigger == 'None') {// If we change the background, all the rest need to be put again on the foreground
         TerrainSVG.selectAll('path').remove();
-        TerrainSVG.selectAll('line.slope').remove();
+        TerrainSVG.selectAll('path.slope').remove();
         TerrainSVG.selectAll('circle.city').remove();
         TerrainSVG.selectAll('text').remove();
     } else if (terrainOptions.drawTrigger == 'Coloring'){
         TerrainSVG.selectAll('path.field').remove();
-        TerrainSVG.selectAll('path.field_shading').remove();
+        TerrainSVG.selectAll('path.river').remove(); // in case we are going from custom rivers back to normal rivers
     }
     if(terrainOptions.drawTrigger == 'Terrain') {// We need to redraw the terrain, background
         TerrainSVG.selectAll('path.river').remove();
-        TerrainSVG.selectAll('path.river_background').remove();
         TerrainSVG.selectAll('path.coast').remove();
-        TerrainSVG.selectAll('line.slope').remove();
+        TerrainSVG.selectAll('path.slope').remove();
         if(terrainOptions.mapViewer) { // If we are drawing the terrain then we need to udpate the cities to be on the foreground
             TerrainSVG.selectAll('path.border').remove();
             TerrainSVG.selectAll('circle.city').remove();
@@ -84,17 +83,23 @@ function TerrainDraw() {
         else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, TerrainParams);}
     }
 
-    if (terrainOptions.mapViewer && terrainOptions.drawTrigger != 'Cities') {
-        drawPaths(TerrainSVG, 'coast', terrainRender.coasts, 'black', 4);
+    if(terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') { // Only need to redraw the rivers when we are remving the background to put the black and white map
+        drawCurvedPaths(TerrainSVG, 'river', terrainRender.rivers, 'black', 2, 0);
+    }
+    else if (terrainOptions.mapViewer && terrainOptions.drawTrigger != 'Cities') {
+        drawCurvedPaths(TerrainSVG, 'coast', terrainRender.coasts, 'black', 4);
         visualizeSlopes(TerrainSVG, terrainRender);
         if (selected_view == 'Coloring') {visualizeRivers(TerrainSVG, terrainRender);}
-        else {drawPaths(TerrainSVG, 'river', terrainRender.rivers, 'black', 2);}
-        //
+        else {drawCurvedPaths(TerrainSVG, 'river', terrainRender.rivers, 'black', 2, 0);}
     }
 
     if (terrainOptions.cities && 
            !( (!terrainOptions.mapViewer && terrainOptions.drawTrigger == 'Terrain') || (terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') ) ) {
-        drawPaths(TerrainSVG, 'border', terrainRender.borders, 'black', 5);
+        drawCurvedPathsExtras(TerrainSVG, 'border', terrainRender.borders, 'black', 5, ['stroke-linecap', 'butt',
+                                                                                        'stroke-dasharray', [4,4],
+                                                                                        'stroke-alignment', 'inner',
+                                                                                        'stroke-position', 'inner',
+                                                                                        'stroke-location', 'inner']);
         visualizeCities(TerrainSVG, terrainRender);
         drawLabels(TerrainSVG, terrainRender);
     }

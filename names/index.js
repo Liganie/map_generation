@@ -183,19 +183,19 @@ function drawLabels(svg, render) {
         label.size = size;
         citylabels.push(label);
     }
-    var texts = svg.selectAll('text.city').data(citylabels);
-    texts.enter()
-        .append('text')
-        .classed('city', true);
-    texts.exit()
-        .remove();
-    svg.selectAll('text.city')
-        .attr('x', function (d) {return 1000*d.x})
-        .attr('y', function (d) {return 1000*d.y})
-        .style('font-size', function (d) {return d.size+'px'})
-        .style('text-anchor', function (d) {return d.align})
-        .text(function (d) {return d.text})
-        .raise();
+
+    var points = [];
+    var texts = [];
+    var font_sizes = [];
+    var alignements = [];
+    for(var c=0; c<citylabels.length; c++) {
+        points[c] = [citylabels[c].x, citylabels[c].y];
+        texts[c] = citylabels[c].text;
+        font_sizes[c] = citylabels[c].size;
+        alignements[c] = citylabels[c].align;
+    }
+    
+    drawText(svg, 'city', points, texts, font_sizes, alignements);
 
     var reglabels = [];
     for (var i = 0; i < nterrs; i++) {
@@ -254,31 +254,13 @@ function drawLabels(svg, render) {
         });
     }
 
-    texts = svg.selectAll('text.region').data(reglabels);
-    texts.enter()
-        .append('text')
-        .classed('region', true);
-    texts.exit()
-        .remove();
-    svg.selectAll('text.region')
-        .attr('x', function (d) {return 1000*d.x})
-        .attr('y', function (d) {return 1000*d.y})
-        .style('font-size', function (d) {return 1000*d.size+'px'})
-        .style('text-anchor', 'middle')
-        .style('font-variant', 'small-caps')
-        .text(function (d) {return d.text})
-        .raise();
-
-    // Pure vizual modifications
-    svg.selectAll('text')
-        .style("font-family", ["Palatino Linotype", "Book Antiqua", "Palatino", "serif"])
-        .style('color', 'black')
-        .style('stroke', 'white')
-        .style('stroke-width', 5)
-        .style('stroke-linejoin', 'round')
-        .style('paint-order', 'stroke')
-        .style('stroke-linecap', 'butt');
-    svg.selectAll('text.region')
-        .style('stroke-width', 10);
-
+    points = [];
+    texts = [];
+    font_sizes = [];
+    for(var c=0; c<reglabels.length; c++) {
+        points[c] = [reglabels[c].x, reglabels[c].y];
+        texts[c] = reglabels[c].text;
+        font_sizes[c] = 1000*reglabels[c].size;
+    }
+    drawText(svg, 'region', points, texts, font_sizes, 'middle', ['font-variant', 'small-caps', 'stroke-width', 10]);
 }

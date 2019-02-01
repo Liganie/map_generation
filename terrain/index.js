@@ -103,51 +103,16 @@ function makeD3Path(path) {
 function visualizeVoronoi(svg, field, lo, hi) {
     if (hi == undefined) hi = d3.max(field) + 1e-9;
     if (lo == undefined) lo = d3.min(field) - 1e-9;
-    var mappedvals = field.map(function (x) {return x > hi ? 1 : x < lo ? 0 : (x - lo) / (hi - lo)});
-    var tris = svg.selectAll('path.field').data(field.mesh.tris)
-    tris.enter()
-        .append('path')
-        .classed('field', true);
-    
-    tris.exit()
-        .remove();
 
-    svg.selectAll('path.field')
-        .attr('d', makeD3Path)
-        .style("stroke", "none")    // set the stroke color
-        //.style("stroke-width", 5)    // set the stroke width
-        /*.style('stroke', function (d, i) { // dynamic color range
-            return field[i] >= 0 ? params.colors.dirt: params.colors.water;
-        })*/
-        .style("fill-opacity", 1.0)
-        .style('fill', function (d, i) {
-            return d3.interpolateViridis(mappedvals[i]);
-        });
+    var mappedvals = field.map(function (x) {return x > hi ? 1 : x < lo ? 0 : (x - lo) / (hi - lo)});
+    var colors = [];
+    for(var i=0; i<field.mesh.tris.length; i++) {
+        colors[i] = d3.interpolateViridis(mappedvals[i]);
+    }
+    drawArea(svg, 'field', field.mesh.tris, colors);
 }
 
 function visualizeTerrain(svg, render, params) {
-
-    var polygons = contour(render.h,0);
-    var terrainData = [[[-1,-1],[-1,1],[1,1],[1,-1]]];
-    for (var i = 0; i < polygons.length; i++) {
-        terrainData[i+1] = polygons[i];
-    }
-
-    var tris = svg.selectAll('path.field').data(terrainData)
-    tris.enter()
-        .append('path')
-        .classed('field', true);
-    
-    tris.exit()
-        .remove();
-
-    svg.selectAll('path.field')
-        .attr('d', makeD3Path)
-        .style('fill', function (d, i) {
-            return i > 0 ? params.colors.dirt: params.colors.water;
-        });
-
-
     var lo = 0;
     var hi = d3.max(render.h);
     var mappedvals = render.h.map(function (x) {return x > hi ? 1 : x > lo ? (x - lo) / (- hi + lo) : (x - lo) / (hi - lo)});
@@ -155,51 +120,20 @@ function visualizeTerrain(svg, render, params) {
       .domain([0, 0.5])
       .interpolate(d3.interpolateHcl)
       .range([d3.rgb(params.colors.dirt), d3.rgb(params.colors.mountains)]);
-    var tris_shading = svg.selectAll('path.field_shading').data(render.h.mesh.tris)
-    tris_shading.enter()
-        .append('path')
-        .classed('field_shading', true);
-    
-    tris_shading.exit()
-        .remove();
 
-    svg.selectAll('path.field_shading')
-        .attr('d', makeD3Path)
-        .style("stroke-width", 2)
-        .style("stroke", function (d, i) {
-            return render.h[i] > 0 ? color(render.h[i]) : 'none';
-        })
-        .style('fill', function (d, i) {
-            return render.h[i] > 0 ? color(render.h[i]) : 'none';
-        });
-
-}
-
-function drawPaths(svg, cls, paths, stroke_color, strokeSize) {
-    stroke_color = stroke_color || 'none';
-
-    var paths = svg.selectAll('path.' + cls).data(paths)
-    paths.enter()
-            .append('path')
-            .classed(cls, true)
-    paths.exit()
-            .remove();
-    svg.selectAll('path.' + cls)
-        .attr('d', makeD3Path)
-        .style("stroke-width", strokeSize)
-        .style('stroke', stroke_color)
-        .style('fill', 'none')
-        .style('stroke-linecap', 'round');
-
-    // Dirty fix for border
-    if(cls == 'border') {
-        svg.selectAll('path.' + cls)
-            .style("stroke-dasharray", [4,4])
-            .style('stroke-linecap', 'butt')
-            .style('stroke-alignment', 'inner')
-            .style('stroke-position', 'inner')
-            .style('stroke-location', 'inner');
+    var colors = [params.colors.water, params.colors.dirt]; // initial values are for the background
+    var mesh = [[[-1,-1],[-1,1],[1,1],[1,-1]], contour(render.h,0)];
+    for(var i=0; i<render.h.mesh.tris.length; i++) {
+        if(render.h[i] > 0) {
+            colors[colors.length] = color(render.h[i]);
+            mesh[mesh.length] = render.h.mesh.tris[i];
+        }
     }
+    drawArea(svg, 'field', mesh, colors);
+    
+    svg.selectAll('path.field')
+        .attr("stroke-width", 2)
+        .attr("stroke", function(d, i) {return colors[i];});
 }
 
 function visualizeSlopes(svg, render) {
@@ -237,134 +171,37 @@ function visualizeSlopes(svg, render) {
             strokes.push([[x-l, y+l*s], [x+l, y-l*s]]);
         }
     }
-    var lines = svg.selectAll('line.slope').data(strokes)
-    lines.enter()
-            .append('line')
-            .classed('slope', true);
-    lines.exit()
-            .remove();
-    svg.selectAll('line.slope')
-        .style('stroke-width', 1)
-        .style('fill', 'none')
-        .style('stroke', 'black')
-        .style('stroke-linecap', 'round')
-        .attr('x1', function (d) {return 1000*d[0][0]})
-        .attr('y1', function (d) {return 1000*d[0][1]})
-        .attr('x2', function (d) {return 1000*d[1][0]})
-        .attr('y2', function (d) {return 1000*d[1][1]});
+    drawCurvedPathsExtras(svg, 'slope', strokes, 'black', 1);
 }
-
 
 function visualizeRivers(svg, render) {
-    var cls = 'river_background'
-    var river_background = render.rivers.flux;
 
-    var paths = svg.selectAll('path.' + cls).data(river_background)
-    paths.enter()
-            .append('path')
-            .classed(cls, true)
-            .attr('d', makeD3Path)
-            //.style("stroke-width", 15)
-            .style('stroke-width', function (d, i) {
-                return Math.sqrt(d.flux*400)+1; // min flux is 0.01 and shall provide 2px for the border and 1 for the fill. SQRT for volume -> radius convertion
-            })
-            .style('stroke', 'black')
-            .style('fill', 'none')
-            .style('stroke-linecap', 'round');
+    var flux = render.rivers.map( function(d) {return d.map(function(x) {return (x.flux != null)? Math.sqrt(x.flux*400)+1: 2;});});
+    drawCurvedPaths(svg, 'river', render.rivers, 'black', flux, 0);
 
-    // we need to make the termination of the path longer in order to not see the background
-    var endPoints = render.rivers.endPoints;
-    var rivers = river_background;
-    for( var i=0; i<endPoints.length; i++) {
-        rivers[endPoints[i]][1][0] = rivers[endPoints[i]][1][0] + (rivers[endPoints[i]][1][0] - rivers[endPoints[i]][0][0])*0.25;
-        rivers[endPoints[i]][1][1] = rivers[endPoints[i]][1][1] + (rivers[endPoints[i]][1][1] - rivers[endPoints[i]][0][1])*0.25;
+    var elongated = [];
+    for(var p=0; p<render.rivers.length; p++) {
+        elongated[p] = render.rivers[p].slice(); // Slice needed otherwise it will modify river length in all views
+        if(render.rivers.deltas[p] == true) {
+            elongated[p][elongated[p].length-1] = elongated[p][elongated[p].length-1].slice(); // Slice needed otherwise it will modify river length in all views
+            elongated[p][elongated[p].length-1][0] = elongated[p][elongated[p].length-1][0]
+                                                   + (elongated[p][elongated[p].length-1][0] - elongated[p][elongated[p].length-2][0])*1.0;
+            elongated[p][elongated[p].length-1][1] = elongated[p][elongated[p].length-1][1]
+                                                   + (elongated[p][elongated[p].length-1][1] - elongated[p][elongated[p].length-2][1])*1.0;
+        }
     }
-
-    cls = 'river'
-    paths = svg.selectAll('path.' + cls).data(rivers)
-    paths.enter()
-            .append('path')
-            .classed(cls, true)
-            .attr('d', makeD3Path)
-            //.style("stroke-width", 15)
-            .style('stroke-width', function (d, i) {
-                return Math.sqrt(d.flux*400); // min flux is 0.01 and shall provide 2px for the border and 1 for the fill. SQRT for volume -> radius convertion
-            })
-            .style('stroke', render.params.colors.water)
-            .style('fill', 'none')
-            .style('stroke-linecap', 'round');
+    flux = render.rivers.map( function(d) {return d.map(function(x) {return (x.flux != null)? Math.sqrt(x.flux*400): 1;});});
+    drawCurvedPaths(svg, 'river', elongated, render.params.colors.water, flux, 0);
 }
-
-function visualizeContour(h, level) {
-    level = level || 0;
-    var links = contour(h, level);
-    drawPaths('coast', links);
-}
-
-function visualizeBorders(h, cities, n) {
-    var links = getBorders(h, getTerritories(h, cities, n));
-    drawPaths('border', links);
-}
-
 
 function visualizeCities(svg, render) {
-    var cities = render.cities;
-    var h = render.h;
-    var n = render.params.nterrs;
-
-    var circs = svg.selectAll('circle.city').data(cities);
-    circs.enter()
-            .append('circle')
-            .classed('city', true);
-    circs.exit()
-            .remove();
-    svg.selectAll('circle.city')
-        .attr('cx', function (d) {return 1000*h.mesh.vxs[d][0]})
-        .attr('cy', function (d) {return 1000*h.mesh.vxs[d][1]})
-        .attr('r', function (d, i) {return i >= n ? 4 : 10})
-        .style('fill', 'white')
-        .style('stroke-width', 5)
-        .style('stroke-linecap', 'round')
-        .style('stroke', 'black')
-        .raise();
-}
-
-function drawMap(svg, render) {
-    render.rivers = getRivers(render.h, 0.01);
-    render.coasts = contour(render.h, 0);
-    render.terr = getTerritories(render);
-    render.borders = getBorders(render);
-    drawPaths(svg, 'river', render.rivers, 'black', 2);
-    drawPaths(svg, 'coast', render.coasts, 'black', 4);
-    drawPaths(svg, 'border', render.borders, 'black', 5);
-    visualizeSlopes(svg, render);
-    visualizeCities(svg, render);
-    drawLabels(svg, render);
-}
-
-function drawTerrain(svg, render) {
-    drawPaths(svg, 'river', render.rivers, 'black', 2);
-    drawPaths(svg, 'coast', render.coasts, 'black', 4);
-    drawPaths(svg, 'border', render.borders, 'black', 5);
-    visualizeSlopes(svg, render);
-    visualizeCities(svg, render);
-    drawLabels(svg, render);
-}
-
-function doMap(svg, params) {
-    var render = {
-        params: params
-    };
-    var width = svg.attr('width');
-    svg.attr('height', width * params.extent.height / params.extent.width);
-    svg.attr('viewBox', -1000 * params.extent.width/2 + ' ' + 
-                        -1000 * params.extent.height/2 + ' ' + 
-                        1000 * params.extent.width + ' ' + 
-                        1000 * params.extent.height);
-    svg.selectAll().remove();
-    render.h = params.generator(params);
-    placeCities(render);
-    drawMap(svg, render);
+    var points = [];
+    var radius = [];
+    for(var i=0; i<render.cities.length; i++) {
+        points[i] = [render.h.mesh.vxs[render.cities[i]][0], render.h.mesh.vxs[render.cities[i]][1]];
+        radius[i] = i >= render.params.nterrs ? 4 : 10;
+    }
+    drawPoints(svg, 'city', points, radius, 'black', 5, 'white');
 }
 
 var defaultParams = {

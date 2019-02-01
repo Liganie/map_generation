@@ -64,7 +64,7 @@ function getRivers(h, limit) {
             } else {
                 link = [up, [(up[0] + down[0])/2, (up[1] + down[1])/2]];
             }
-            link.flux = Math.max(flux[i], flux[dh[i]]);
+            link.flux = flux[i];
             links.push(link);
         }
     }
@@ -90,27 +90,28 @@ function getRivers(h, limit) {
     }
 
     links = links.map(relaxPath);
-    for(var f=0; f<flux_links.length; f++) { // looking for the correspondance
+    for(var f=0; f<flux_links.length; f++) {
         links[flux_links[f].i1][flux_links[f].j1].flux = flux_links[f].flux;
-        flux_links[f][0][0] = links[flux_links[f].i0][flux_links[f].j0][0]
-        flux_links[f][0][1] = links[flux_links[f].i0][flux_links[f].j0][1]
-        flux_links[f][1][0] = links[flux_links[f].i1][flux_links[f].j1][0]
-        flux_links[f][1][1] = links[flux_links[f].i1][flux_links[f].j1][1]
     }
-    links.flux = flux_links;
 
     // Getting all the termination of the paths, as they end in sea
     // This is used to clean the rendering
-    var endPoints = [];
-    for(var f1=0; f1<flux_links.length; f1++) {
-        for(var f2=0; f2<flux_links.length; f2++) {
-            if(f1 == f2) continue;
-            if(    flux_links[f1][1][0] == flux_links[f2][0][0] // if the ending of this link is the start of another
-                && flux_links[f1][1][1] == flux_links[f2][0][1]) break;
+    var deltas = [];
+    for(var p1=0; p1<links.length; p1++) {
+        deltas[p1] = true;
+        for(var p2=0; p2<links.length; p2++) {
+            if(p1 == p2) continue;
+            for(var i=0; i<links[p2].length; i++) { // We check if we can find a point in the second path where the first path ends
+                if(    links[p1][links[p1].length-1][0] == links[p2][i][0]
+                    && links[p1][links[p1].length-1][1] == links[p2][i][1]) {
+                    deltas[p1] = false;
+                    break;
+                }
+            }
+            if(deltas[p1] == false) break;
         }
-        if(f2 == flux_links.length) endPoints[endPoints.length] = f1;
     }
-    links.endPoints = endPoints;
+    links.deltas = deltas;
 
     return links;
 }
