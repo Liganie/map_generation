@@ -27,10 +27,10 @@ Code should be better separated
 	terrain generation
 	citites generation
 	rendering
-Try different type of generator
+Try different type of generator for names
 	Add different prefix or suffix to names depending on the culture (dungon/fort for instance)
 	Potentially add a generator using adjectives / name like ironhaven or sandcity
-Try different type of generator
+Try different type of generator for terrain
 	using polygons
 	using noise
 	potentially different sampling for the coasts

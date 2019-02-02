@@ -71,13 +71,13 @@ function generateCoast(params) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 var colorSchemes = {
-    default: { water: "#00b6dd", dirt: "#c9ae7b", mountains: "#ffffff" },
-    desert:  { water: "#3399ff", dirt: "#ffe066", mountains: "#b37700" },
-    forest:  { water: "#000066", dirt: "#009900", mountains: "#003300" },
-    plains:  { water: "#6699ff", dirt: "#99e699", mountains: "#663300" },
-    rocks:   { water: "#9999ff", dirt: "#595959", mountains: "#d9d9d9" },
-    tundra:  { water: "#6699ff", dirt: "#e6f2ff", mountains: "#ffffff" },
-    vulcano: { water: "#ff8000", dirt: "#8d8d8d", mountains: "#1a001a" }
+    default: { sea: "#00b6dd", coasts: "#00d0ff", dirt: "#c9ae7b", mountains: "#ffffff" },
+    desert:  { sea: "#3399ff", coasts: "#66b3ff", dirt: "#ffe066", mountains: "#b37700" },
+    forest:  { sea: "#000066", coasts: "#0000cc", dirt: "#009900", mountains: "#003300" },
+    plains:  { sea: "#6699ff", coasts: "#99bbff", dirt: "#99e699", mountains: "#663300" },
+    rocks:   { sea: "#9999ff", coasts: "#ccccff", dirt: "#595959", mountains: "#d9d9d9" },
+    tundra:  { sea: "#6699ff", coasts: "#99bbff", dirt: "#e6f2ff", mountains: "#ffffff" },
+    vulcano: { sea: "#ff8000", coasts: "#ff9922", dirt: "#8d8d8d", mountains: "#1a001a" }
 }
 
 function visualizePoints(svg, pts) {
@@ -116,24 +116,36 @@ function visualizeTerrain(svg, render, params) {
     var lo = 0;
     var hi = d3.max(render.h);
     var mappedvals = render.h.map(function (x) {return x > hi ? 1 : x > lo ? (x - lo) / (- hi + lo) : (x - lo) / (hi - lo)});
+
+    console.log('Need proper coloring for lava');
+    console.log('Need Progressive coasts');
+    console.log('Need better outline color');
+    drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.colors.sea); // draw the background
+
     var color = d3.scaleLinear()
+      .domain([0, 2])
+      .interpolate(d3.interpolateHcl)
+      .range([d3.rgb(params.colors.sea), d3.rgb(params.colors.coasts)]);
+
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 51); // Draw the outline of the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(0), 50); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 35); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 20); // Draw the coasts
+    drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
+
+    color = d3.scaleLinear()
       .domain([0, 0.5])
       .interpolate(d3.interpolateHcl)
       .range([d3.rgb(params.colors.dirt), d3.rgb(params.colors.mountains)]);
-
-    var colors = [params.colors.water, params.colors.dirt]; // initial values are for the background
-    var mesh = [[[-1,-1],[-1,1],[1,1],[1,-1]], contour(render.h,0)];
+    var colors = []; // initial values are for the background
+    var mesh = [];
     for(var i=0; i<render.h.mesh.tris.length; i++) {
         if(render.h[i] > 0) {
             colors[colors.length] = color(render.h[i]);
             mesh[mesh.length] = render.h.mesh.tris[i];
         }
     }
-    drawArea(svg, 'field', mesh, colors);
-    
-    svg.selectAll('path.field')
-        .attr("stroke-width", 2)
-        .attr("stroke", function(d, i) {return colors[i];});
+    drawArea(svg, 'field', mesh, colors, 2);
 }
 
 function visualizeSlopes(svg, render) {
@@ -176,7 +188,7 @@ function visualizeSlopes(svg, render) {
 
 function visualizeRivers(svg, render) {
 
-    var flux = render.rivers.map( function(d) {return d.map(function(x) {return (x.flux != null)? Math.sqrt(x.flux*400)+1: 2;});});
+    var flux = render.rivers.map( function(d) {return d.map(function(x) {return (x.flux != null)? Math.sqrt(x.flux*400)+2: 3;});});
     drawCurvedPaths(svg, 'river', render.rivers, 'black', flux, 0);
 
     var elongated = [];
@@ -191,7 +203,7 @@ function visualizeRivers(svg, render) {
         }
     }
     flux = render.rivers.map( function(d) {return d.map(function(x) {return (x.flux != null)? Math.sqrt(x.flux*400): 1;});});
-    drawCurvedPaths(svg, 'river', elongated, render.params.colors.water, flux, 0);
+    drawCurvedPaths(svg, 'river', elongated, render.params.colors.coasts, flux, 0);
 }
 
 function visualizeCities(svg, render) {
@@ -239,7 +251,8 @@ var TerrainParams = {
     },
     colors: {
         template: 'random',
-        water: '#00b6dd',
+        sea: '#00b6dd',
+        coasts: '#00d0ff',
         dirt: '#c9ae7b',
         mountains: '#ffffff'
     }
@@ -247,12 +260,14 @@ var TerrainParams = {
 
 function getColors(params) {
     if(params.colors.template in colorSchemes) {
-        params.colors.water = colorSchemes[params.colors.template].water;
+        params.colors.sea = colorSchemes[params.colors.template].sea;
+        params.colors.coasts = colorSchemes[params.colors.template].coasts;
         params.colors.dirt = colorSchemes[params.colors.template].dirt;
         params.colors.mountains = colorSchemes[params.colors.template].mountains;
     } else if (params.colors.template == 'random') {
         var key = Object.keys(colorSchemes)[~~(seededRand() * Object.keys(colorSchemes).length)];
-        params.colors.water = colorSchemes[key].water;
+        params.colors.sea = colorSchemes[key].sea;
+        params.colors.coasts = colorSchemes[key].coasts;
         params.colors.dirt = colorSchemes[key].dirt;
         params.colors.mountains = colorSchemes[key].mountains;
     }
