@@ -78,6 +78,7 @@ function TerrainDraw() {
         else if (selected_view == 'Slope')      {visualizeVoronoi(TerrainSVG, terrainRender.slope, 0, 10);}
         else if (selected_view == 'Flux')       {visualizeVoronoi(TerrainSVG, terrainRender.flux, 0, 0.01);}
         else if (selected_view == 'Erosion')    {visualizeVoronoi(TerrainSVG, erosionRate(terrainRender.h));}
+        else if (selected_view == 'Biomes')     {visualizeVoronoi(TerrainSVG, terrainRender.biomes);}
         else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
         else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
         else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, TerrainParams);}
@@ -108,7 +109,7 @@ function TerrainDraw() {
 var ViewCombobox = TerrainDiv.append("select")
 .on('change',TerrainDrawColoring)
 .selectAll('option')
-    .data(["No coloring", "Heightmap", "Slope", "Flux", "Erosion", "Regions", "City Score", "Coloring"]).enter()
+    .data(["No coloring", "Heightmap", "Slope", "Flux", "Erosion", "Biomes", "Regions", "City Score", "Coloring"]).enter()
     .append('option')
         .text(function (d) { return d; });
 

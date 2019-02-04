@@ -165,6 +165,81 @@ function getTerritories(render) {
     return terr;
 }
 
+function cleanBiome(biomes, nb_pass, base_biome, default_biome, min_neighbours, max_neighbours) {
+    if(typeof(default_biome)=='number') default_biome = [default_biome];
+
+    for(var pass=0; pass<nb_pass; pass++) {
+        for(var i=0; i<biomes.length; i++) {
+            var neigh = neighbours(biomes.mesh, i);
+            var count = 0;
+            for(var n=0; n<neigh.length; n++) {
+                if(biomes[neigh[n]] == base_biome) count++;
+            }
+            if(biomes[i] == base_biome && count <= min_neighbours) {
+                biomes[i] = default_biome[0];
+            }
+            else if(default_biome.includes(biomes[i]) && count >= max_neighbours) {
+                biomes[i] = base_biome;
+            }
+        }
+    }
+    return biomes;
+}
+
+function getBiomes(render) {
+    var biomeEnum = Object.freeze({"sea":0, "grassland":1, "forest":2, "hill":3, "mountain":4})
+
+    var biomes = [];
+    
+    for(var i=0; i<render.h.length; i++) {
+        biomes[i] = biomeEnum.hill; // default value
+        if(render.h[i] < 0) {
+            biomes[i] = biomeEnum.sea;
+        }
+        else if( (render.slope[i] < 2.5 || render.flux[i] > 0.0025) // Rivers and area with low slope all contains grasslands
+              || (render.slope[i] < 10 && render.h[i] < 0.1) ) { // special rule for the coasts, as the generator tends to make them steep
+            biomes[i] = biomeEnum.grassland;
+        }
+        else if(render.h[i] > 0.35) {
+            biomes[i] = biomeEnum.mountain;
+        }
+    }
+    biomes.mesh = render.h.mesh;
+    
+    // Cleanup
+    biomes = cleanBiome(biomes, 2, biomeEnum.mountain,  [biomeEnum.hill, biomeEnum.grassland], 0, 2);
+    biomes = cleanBiome(biomes, 2, biomeEnum.grassland, [biomeEnum.hill, biomeEnum.mountain],  0, 2);
+
+    // Forests
+    var grassIndex = [];
+    for(var i=0; i<render.h.length; i++) {
+        if(biomes[i] == 1 && render.flux[i] < 0.0025) { // Forests only appear in Grasslands, were there is no rivers
+            if(seededRand()< 0.01) { // 1% chance per valid grassland to seed a forest
+                biomes[i] = biomeEnum.forest;
+                grassIndex[grassIndex.length] = i;
+            }
+        }
+    }
+
+    // Spreading the forests
+    var index;
+    for(var pass=0; pass<10; pass++) {
+        index = Array.from(new Set(grassIndex)); // we avoid duplicated
+        for(var i=0; i<index.length; i++) {
+            var neigh = neighbours(biomes.mesh, index[i]);
+            for(var n=0; n<neigh.length; n++) {
+                if( (biomes[neigh[n]] == biomeEnum.grassland || biomes[neigh[n]] == biomeEnum.hill) // we can spread on both hills and grasslands
+                 && render.flux[neigh[n]] < 0.0025) { // We still exlude the rivers here to have clean rivers and cities
+                    biomes[neigh[n]] = biomeEnum.forest;
+                    grassIndex.push(neigh[n]);
+                }
+            }
+        }
+    }
+
+    return biomes;
+}
+
 function getBorders(render) {
     var terr = render.terr;
     var h = render.h;
@@ -275,6 +350,6 @@ function renderTerrain(render) {
     render.coasts = contour(render.h, 0);
     render.terr = getTerritories(render);
     render.borders = getBorders(render);
-    render.terr = getTerritories(render);
+    render.biomes = getBiomes(render);
     render.score = cityScore(render.h, render.cities);
 }

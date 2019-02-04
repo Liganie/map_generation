@@ -117,20 +117,17 @@ function visualizeTerrain(svg, render, params) {
     var hi = d3.max(render.h);
     var mappedvals = render.h.map(function (x) {return x > hi ? 1 : x > lo ? (x - lo) / (- hi + lo) : (x - lo) / (hi - lo)});
 
-    console.log('Need proper coloring for lava');
-    console.log('Need Progressive coasts');
-    console.log('Need better outline color');
     drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.colors.sea); // draw the background
 
     var color = d3.scaleLinear()
-      .domain([0, 2])
+      .domain([0, 3])
       .interpolate(d3.interpolateHcl)
       .range([d3.rgb(params.colors.sea), d3.rgb(params.colors.coasts)]);
 
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 51); // Draw the outline of the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(0), 50); // Draw the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 35); // Draw the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 20); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 51); // Draw the outline of the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 50); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 35); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
     drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
 
     color = d3.scaleLinear()
