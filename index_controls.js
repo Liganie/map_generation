@@ -82,6 +82,7 @@ function TerrainDraw() {
         else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
         else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
         else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, TerrainParams);}
+        else if (selected_view == 'Map')   {visualizeAsMap  (TerrainSVG, terrainRender, TerrainParams);}
     }
 
     if(terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') { // Only need to redraw the rivers when we are remving the background to put the black and white map
@@ -89,8 +90,8 @@ function TerrainDraw() {
     }
     else if (terrainOptions.mapViewer && terrainOptions.drawTrigger != 'Cities') {
         drawCurvedPaths(TerrainSVG, 'coast', terrainRender.coasts, 'black', 4);
-        visualizeSlopes(TerrainSVG, terrainRender);
-        if (selected_view == 'Coloring') {visualizeRivers(TerrainSVG, terrainRender);}
+        if ( selected_view != 'Map')visualizeSlopes(TerrainSVG, terrainRender);
+        if (selected_view == 'Coloring' || selected_view == 'Map') {visualizeRivers(TerrainSVG, terrainRender);}
         else {drawCurvedPaths(TerrainSVG, 'river', terrainRender.rivers, 'black', 2, 0);}
     }
 
@@ -109,7 +110,7 @@ function TerrainDraw() {
 var ViewCombobox = TerrainDiv.append("select")
 .on('change',TerrainDrawColoring)
 .selectAll('option')
-    .data(["No coloring", "Heightmap", "Slope", "Flux", "Erosion", "Biomes", "Regions", "City Score", "Coloring"]).enter()
+    .data(["No coloring", "Heightmap", "Slope", "Flux", "Erosion", "Biomes", "Regions", "City Score", "Coloring", "Map"]).enter()
     .append('option')
         .text(function (d) { return d; });
 

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=UTF-8" name="Content-Type">
+        <link rel="stylesheet" href="style.css" />
+        <link href='https://fonts.googleapis.com/css?family=Raleway:400,700' rel='stylesheet' type='text/css'>
+        <title>Map Generator</title>
+    </head>
+
+    <body>
+        <div id="content">
+<div class="splash">
+    
+    <h1>Testing stuff</h1>
+    <div class="note">
+
+        <script src="D3/d3.js"></script>
+        <script src="draw.js"></script>
+        <script src="utils.js"></script>
+        <script src="terrain/features.js"></script>
+
+        <script>
+            function addPoint(P1, P2, factor) {
+                return [P1[0]+P2[0], P1[1]+P2[1]];
+            }
+
+            initialize();
+
+            var svg = d3.select("div.note").append("svg")
+                                                .attr("width", 500)
+                                                .attr("height", 500);
+
+            var width = svg.attr('width');
+            svg.attr('height', width );
+            svg.attr('viewBox', -1000/2 + ' ' + -1000/2 + ' ' + 1000 + ' ' + 1000 );
+
+
+            //var mountain = getMountain([0, 0], 0.1, 0.1);
+            //drawObject(mountain);
+            //*
+            for(var x=-0.5; x<0.5; x+=0.2) {
+                for(var y=-0.55; y<0.6; y+=0.2) {
+                    var mountain = getMountain([x, y], 0.1, randRangeFloat(0.075, 0.15));
+                    drawObject(svg, 'mountain', mountain);
+                }
+            } //*/
+
+
+        </script>
+
+        </div>
+    </div>
+    </body>
+</html>

@@ -29,13 +29,54 @@ function placeCities(render) {
     }
 }
 
+function getMountain(base_point, mountain_width, mountain_height) {
+    var mountain = {};
+
+    var primary_path = [base_point, [base_point[0]+mountain_width/2, base_point[1]-mountain_height],[base_point[0]+mountain_width, base_point[1]]];
+    primary_path[1][0] =  primary_path[1][0] + randRangeFloat(-mountain_width/4, mountain_width/4); // moving the peak a bit
+
+    var path = []; // The mountain outline
+    var samples = 8;
+    var dynamic_range = [];
+    for(var i=0; i<2; i++) {
+        path.push(primary_path[i]);
+        dynamic_range = [primary_path[i+1][0]-primary_path[i][0], primary_path[i+1][1]-primary_path[i][1]]
+        for(var s=1; s<samples; s++) {
+            path.push( [primary_path[i][0] + s/(samples+1)*dynamic_range[0] + randRangeFloat(-1, 1)*dynamic_range[0]/(2*samples), // Range to avoid crossing
+                        primary_path[i][1] + s/(samples+1)*dynamic_range[1] + randRangeFloat(-1, 1)*dynamic_range[1]/samples ] ); // Range to allow crossing
+        }
+    }
+    path.push(primary_path[2]);
+    mountain.outline = [path];
+
+    path = [primary_path[1]]; // the inside path form the top
+    dynamic_range = [mountain_width, mountain_height];
+    for(var s=1; s<samples+2; s++) {
+        path.push( [primary_path[1][0] + randRangeFloat(-1, 1)*dynamic_range[0]/(2*samples), // Range to avoid crossing
+                    primary_path[1][1] + s/(samples)*dynamic_range[1] + randRangeFloat(-1, 1)*dynamic_range[1]/(2*samples) ] ); // Range to avoid crossing
+    }
+    mountain.faded = [path];
+
+    mountain.area = [ mountain.outline[0].slice(0, samples+1).concat(mountain.faded[0]), 
+                      mountain.outline[0].slice(samples, 2*samples+1).reverse().concat(mountain.faded[0]) ];
+
+    // Apply coloring rules
+    mountain.area.colors = ['#cccccc','#eeeeee'];
+    mountain.outline.colors = 'black';
+    mountain.outline.strokes = 3;
+    mountain.faded.colors = 'black';
+    mountain.faded.strokes = [3, -1];
+
+    return mountain;
+}
+
 function contour(h, level) {
     level = level || 0;
     var edges = [];
     for (var i = 0; i < h.mesh.edges.length; i++) {
         var e = h.mesh.edges[i];
         if (e[3] == undefined) continue;
-        if (isnearedge(h.mesh, e[0]) || isnearedge(h.mesh, e[1])) continue;
+        //if (isnearedge(h.mesh, e[0]) || isnearedge(h.mesh, e[1])) continue; // Small modification: we want closed borders here
         if ((h[e[0]] > level && h[e[1]] <= level) ||
             (h[e[1]] > level && h[e[0]] <= level)) {
             edges.push([e[2], e[3]]);
@@ -186,8 +227,9 @@ function cleanBiome(biomes, nb_pass, base_biome, default_biome, min_neighbours, 
     return biomes;
 }
 
+var biomeEnum = Object.freeze({"sea":0, "grassland":1, "forest":2, "hill":3, "mountain":4})
+
 function getBiomes(render) {
-    var biomeEnum = Object.freeze({"sea":0, "grassland":1, "forest":2, "hill":3, "mountain":4})
 
     var biomes = [];
     

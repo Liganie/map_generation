@@ -112,6 +112,13 @@ function visualizeVoronoi(svg, field, lo, hi) {
     drawArea(svg, 'field', field.mesh.tris, colors);
 }
 
+function boundingBox(tris) {
+    var base = [ Math.min( tris[0][0], tris[1][0], tris[2][0] ), Math.max( tris[0][1], tris[1][1], tris[2][1] ) ];
+    var width = Math.max( tris[0][0], tris[1][0], tris[2][0] ) - base[0];
+    var height = base[1] - Math.min( tris[0][1], tris[1][1], tris[2][1] );
+    return [base, width, height];
+}
+
 function visualizeTerrain(svg, render, params) {
     var lo = 0;
     var hi = d3.max(render.h);
@@ -143,6 +150,41 @@ function visualizeTerrain(svg, render, params) {
         }
     }
     drawArea(svg, 'field', mesh, colors, 2);
+}
+
+function visualizeAsMap(svg, render, params) {
+    var lo = 0;
+    var hi = d3.max(render.h);
+    var mappedvals = render.h.map(function (x) {return x > hi ? 1 : x > lo ? (x - lo) / (- hi + lo) : (x - lo) / (hi - lo)});
+
+    drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.colors.sea); // draw the background
+
+    var color = d3.scaleLinear()
+      .domain([0, 3])
+      .interpolate(d3.interpolateHcl)
+      .range([d3.rgb(params.colors.sea), d3.rgb(params.colors.coasts)]);
+
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 51); // Draw the outline of the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 50); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 35); // Draw the coasts
+    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
+    drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
+
+    //drawArea(TerrainSVG, 'test', contour(render.biomes, biomeEnum.mountain-0.1), params.colors.dirt, 20);
+    for(var b=0; b<render.biomes.length; b++) {
+        if(render.biomes[b]==biomeEnum.mountain && seededRand()<0.25){
+            var neigh = neighbours(render.h.mesh, b);
+            var count = 0;
+            for(var n=0; n<neigh.length; n++) {
+                if(render.biomes[neigh[n]] == biomeEnum.mountain) count++;
+            }
+            var box = boundingBox(render.h.mesh.tris[b]);
+            box[0]= render.h.mesh.vxs[b];
+            var mountain = getMountain([box[0][0]-box[1]/4*count, box[0][1]], box[1]/2*count, box[2]/2*count );
+            mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), params.colors.dirt];
+            drawObject(svg, 'field', mountain);
+        }
+    }
 }
 
 function visualizeSlopes(svg, render) {

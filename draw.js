@@ -45,7 +45,7 @@ function getLine(array, width_array, stroke_alignement) {
             widths[i] = width_array / 2000; // 1000 factor to compensate for the map scaling, then divided by 2 as we go up and down
         }
         else if(width_array.length == 2){
-            widths[i] = width_array[0]/2000 + (width_array[1] - width_array[0])/2000 * i;
+            widths[i] = Math.max(width_array[0]/2000 + (width_array[1] - width_array[0])/2000 * i/array.length, 0);
         }
         else if(width_array.length == array.length){ // It is an array
             widths[i] = width_array[i]/2000;
@@ -107,6 +107,12 @@ function convertToD3(array) {
 <circles class="city" cx="203.0990614432588" cy="-171.22783064746943" r="10" style="stroke: black; stroke-width: 5; fill: white; stroke-linecap: round;"></circles>
 <circles class="city" cx="203.0990614432588" cy="-171.22783064746943" r="10" style="fill: white; stroke-width: 5; stroke-linecap: round; stroke: black;"></circle>
 */
+
+function drawObject(svg, cls, o) {
+    drawArea(svg, cls, o.area, o.area.colors);
+    drawCurvedPaths(svg, cls, o.outline, o.outline.colors, o.outline.strokes);
+    drawCurvedPaths(svg, cls, o.faded, o.faded.colors, o.faded.strokes);
+}
 
 function drawPoints(svg, cls, points, radius, stroke_color, stroke_width, fill_color) {
     // Need to ensure that radius is an array of the same size
