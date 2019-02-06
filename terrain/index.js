@@ -113,9 +113,26 @@ function visualizeVoronoi(svg, field, lo, hi) {
 }
 
 function boundingBox(tris) {
-    var base = [ Math.min( tris[0][0], tris[1][0], tris[2][0] ), Math.max( tris[0][1], tris[1][1], tris[2][1] ) ];
-    var width = Math.max( tris[0][0], tris[1][0], tris[2][0] ) - base[0];
-    var height = base[1] - Math.min( tris[0][1], tris[1][1], tris[2][1] );
+    //for debug purposed
+    //drawCurvedPaths(TerrainSVG, 'field', [tris], 'green', 2)
+
+    // sorting on y coordinates
+    var min=0;
+    var max=0;
+    for(var i=1; i<3; i++) {
+        if(tris[min][1] > tris[i][1]) min = i;
+        if(tris[max][1] < tris[i][1]) max = i;
+    }
+    var mid = (min+max==1)? 2 : ( (min+max==2) ? 1 : 0);
+
+    // The base is the point in the middle on the y axis as it allow for maximum width
+    var base = [tris[min][0] + (tris[max][0]-tris[min][0])/(tris[max][1]-tris[min][1])*(tris[mid][1]-tris[min][1]), tris[mid][1]];
+    var width = tris[mid][0] - base[0];
+    if(width<0) {
+        base[0] = base[0] + width;
+        width = -width;
+    }
+    var height = tris[max][1] - tris[min][1];
     return [base, width, height];
 }
 
@@ -171,20 +188,23 @@ function visualizeAsMap(svg, render, params) {
     drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
 
     //drawArea(TerrainSVG, 'test', contour(render.biomes, biomeEnum.mountain-0.1), params.colors.dirt, 20);
+
+    var objects = [];
     for(var b=0; b<render.biomes.length; b++) {
-        if(render.biomes[b]==biomeEnum.mountain && seededRand()<0.25){
+        if(render.biomes[b]==biomeEnum.mountain && seededRand()<0.25){//<0.25){
             var neigh = neighbours(render.h.mesh, b);
             var count = 0;
             for(var n=0; n<neigh.length; n++) {
                 if(render.biomes[neigh[n]] == biomeEnum.mountain) count++;
             }
             var box = boundingBox(render.h.mesh.tris[b]);
-            box[0]= render.h.mesh.vxs[b];
-            var mountain = getMountain([box[0][0]-box[1]/4*count, box[0][1]], box[1]/2*count, box[2]/2*count );
+            var mountain = getMountain(box[0], box[1]/2*count, box[2]/2*count );
             mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), params.colors.dirt];
-            drawObject(svg, 'field', mountain);
+            objects.push(mountain);
         }
     }
+    objects.sort((a,b) => (a.bounding_box[0][1] > b.bounding_box[0][1] ) ? 1 : ((b.bounding_box[0][1]  > a.bounding_box[0][1] ) ? -1 : 0)); 
+    drawObjects(svg, 'field', objects);
 }
 
 function visualizeSlopes(svg, render) {

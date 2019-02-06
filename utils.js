@@ -8,7 +8,7 @@ function initialize () {
     switch(window.location.protocol) {
        case 'file:':
          //local file
-        seededRand = seededRandom(1234567);
+        seededRand = seededRandom(12345678);
         if (typeof TerrainParams !== 'undefined') TerrainParams.npts = 2048;
          break;
        default: 

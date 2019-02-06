@@ -103,15 +103,19 @@ function convertToD3(array) {
 //////////                        D3 API WARPER                      ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
-/*
-<circles class="city" cx="203.0990614432588" cy="-171.22783064746943" r="10" style="stroke: black; stroke-width: 5; fill: white; stroke-linecap: round;"></circles>
-<circles class="city" cx="203.0990614432588" cy="-171.22783064746943" r="10" style="fill: white; stroke-width: 5; stroke-linecap: round; stroke: black;"></circle>
-*/
-
 function drawObject(svg, cls, o) {
     drawArea(svg, cls, o.area, o.area.colors);
     drawCurvedPaths(svg, cls, o.outline, o.outline.colors, o.outline.strokes);
     drawCurvedPaths(svg, cls, o.faded, o.faded.colors, o.faded.strokes);
+    // for debug purposes
+    //drawCurvedPaths(svg, cls, [o.bounding_box], 'red', 2, 0);
+}
+
+function drawObjects(svg, cls, objects) {
+    for(var o=0; o<objects.length; o++) {
+        console.log(o);
+        drawObject(svg, cls, objects[o]);
+    }
 }
 
 function drawPoints(svg, cls, points, radius, stroke_color, stroke_width, fill_color) {

@@ -31,6 +31,7 @@ function placeCities(render) {
 
 function getMountain(base_point, mountain_width, mountain_height) {
     var mountain = {};
+    mountain.bounding_box = [base_point, [base_point[0]+mountain_width, base_point[1]-mountain_height] ] ;
 
     var primary_path = [base_point, [base_point[0]+mountain_width/2, base_point[1]-mountain_height],[base_point[0]+mountain_width, base_point[1]]];
     primary_path[1][0] =  primary_path[1][0] + randRangeFloat(-mountain_width/4, mountain_width/4); // moving the peak a bit
@@ -63,9 +64,9 @@ function getMountain(base_point, mountain_width, mountain_height) {
     // Apply coloring rules
     mountain.area.colors = ['#cccccc','#eeeeee'];
     mountain.outline.colors = 'black';
-    mountain.outline.strokes = 3;
+    mountain.outline.strokes = 2;
     mountain.faded.colors = 'black';
-    mountain.faded.strokes = [3, -1];
+    mountain.faded.strokes = [2, -1];
 
     return mountain;
 }
