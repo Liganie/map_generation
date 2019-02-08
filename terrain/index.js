@@ -197,7 +197,7 @@ function visualizeAsMap(svg, render, params) {
 
 function visualizeFeatures(svg, render, params) {
     var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
-    
+
     var objects = [];
     for(var b=0; b<render.biomes.length; b++) {
 

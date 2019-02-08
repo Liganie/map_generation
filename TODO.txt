@@ -1,15 +1,11 @@
-Prio 1
-	clean up
-	biomes
-
 Need a way to make some mountains bigger while remaining in the mountain areas
-Need to ensure that rivers can only grow bigger
-Need to create drawing function
-	Shall be able to specify textures for the fill
-	Add a notion of layer for the drawing
-Need a draw API
-	Function to Scale a set of paths with respect to a point
-	Function to draw a shape with a border / set a shapes
+Need a way to generate a map that is not dependent on the grid
+	Need to get ouly the contours of the coasts / biomes and work from there
+	This would alow more control over size / density
+	This would allow to set a level of details as well
+	This would require to be able to set a random point in a complex shape
+		Need to create a new grid from the shape
+		Need probabilities equals to the area of the triangle
 Re organize everything
 	features
 		cities
@@ -19,16 +15,9 @@ Re organize everything
 	terrain
 		coast
 		terrain itself
-Coast shading -> through outline
 City name change at each show/hide cities
 	this could be a feature
 	or this could be fixed through the handling of the seeded generator
-Code should be made using proper import for clean dependecies if possible
-Code should be better separated
-	grid generation
-	terrain generation
-	citites generation
-	rendering
 Try different type of generator for names
 	Add different prefix or suffix to names depending on the culture (dungon/fort for instance)
 	Potentially add a generator using adjectives / name like ironhaven or sandcity
@@ -36,30 +25,16 @@ Try different type of generator for terrain
 	using polygons
 	using noise
 	potentially different sampling for the coasts
-Add biomes to the mix
-	Potentially based on a wind model
-	Base on slopes
-		beaches close to the sea
-		flat terrain will be plains
-		"plant" trees in plain and see them grow depending on water and random spread
 Add posibility to change water, terrain, biome and elevevation color, potentially per region
-	possiblity to edit the color in a dedicated windoz
-possibility to change texdture and renderings
-Add the posibility to change to different colors schemes
+	possiblity to edit the color in a dedicated window
+possibility to change texture and renderings
 Change the city creation to contain more city types
 Change the city generation to be population / region based instead of capital based
 Change the region generation to be of different sizes or contain more than one big city (but only one capital)
 Try to be able to hide paramter window in a foldable fashion
-Create a layout closer to a proper webpage
-	generate different subpage to test the different components independently
-		Index shall be for random map only
-		Page for grid generation?
-		Page for terrain only generation
-		Page for cities placement
-		Page for biomes testing
 Fix the terrain generator to be able to used multiple time the same elements
 Add lakes
-Add different cultures into the game, one per region
+Add different cultures into the game, one per region at max
 
 long term:
 	possibility to drag and drop cities or other feature unto the map

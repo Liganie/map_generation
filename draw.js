@@ -36,7 +36,7 @@ function getNormals(array) {
 
 // Get a boudary around a given path, starting with a given width and ending with another one
 function getLine(array, width_array, stroke_alignement) {
-    width_array = width_array || 1;
+    if(typeof width_array == 'undefined') width_array =  1;
     stroke_alignement = stroke_alignement || 'center';
 
     var widths = [];
@@ -237,8 +237,8 @@ function drawCurvedPathsExtras(svg, cls, paths, stroke_color, stroke_width, extr
 }
 
 function drawCurvedPaths(svg, cls, paths, stroke_color, stroke_width, cardinal_tension, stroke_alignement) {
-    stroke_width = stroke_width || 1;
-    cardinal_tension = cardinal_tension || 0.5;
+    if(typeof stroke_width == 'undefined') stroke_width =  1;
+    if(typeof cardinal_tension == 'undefined') cardinal_tension =  0.5;
     stroke_alignement = stroke_alignement || 'center';
 
     var widths = [];
@@ -275,7 +275,7 @@ function drawCurvedPaths(svg, cls, paths, stroke_color, stroke_width, cardinal_t
 
 function drawArea(svg, cls, paths, fill_colors, stroke_width, cardinal_tension, extras) {
     stroke_width = stroke_width || 0;
-    if(cardinal_tension==null) cardinal_tension =  0.5;
+    if(typeof cardinal_tension == 'undefined') cardinal_tension =  1;
 
     var colors = [];
     for(var i=0; i<paths.length; i++) {

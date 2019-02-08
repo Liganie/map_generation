@@ -178,9 +178,13 @@ function getRivers(h, limit) {
 
     // Getting all the termination of the paths, as they end in sea
     // This is used to clean the rendering
+    // Also ensuring that the flux is always increasing
     var deltas = [];
     for(var p1=0; p1<links.length; p1++) {
         deltas[p1] = true;
+        for(var i=1; i<links[p1].length; i++) {
+            if(links[p1][i-1].flux > links[p1][i].flux) links[p1][i].flux = links[p1][i-1].flux;
+        }
         for(var p2=0; p2<links.length; p2++) {
             if(p1 == p2) continue;
             for(var i=0; i<links[p2].length; i++) { // We check if we can find a point in the second path where the first path ends
