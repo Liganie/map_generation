@@ -29,8 +29,8 @@
             initialize();
 
             var svg = d3.select("div.note").append("svg")
-                                                .attr("width", 500)
-                                                .attr("height", 500);
+                                                .attr("width", 600)
+                                                .attr("height", 600);
 
             var width = svg.attr('width');
             svg.attr('height', width );
@@ -44,6 +44,9 @@
                 for(var y=-0.55; y<0.6; y+=0.2) {
                     var mountain = getMountain([x, y], 0.1, randRangeFloat(0.075, 0.15));
                     drawObject(svg, 'mountain', mountain);
+
+                    var tree = getTree([x, y], 0.015, 0.03);
+                    drawObject(svg, 'tree', tree);
                 }
             } //*/
 

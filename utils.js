@@ -42,7 +42,7 @@ function randRangeInt(lo, hi) {
         hi = lo;
         lo = 0;
     }
-    return Math.floor(seededRand() * (hi - lo)) + lo;
+    return Math.floor(seededRand() * (hi - lo + 1)) + lo;
 }
 
 function randRangeFloat(lo, hi) {
@@ -51,6 +51,15 @@ function randRangeFloat(lo, hi) {
         lo = 0;
     }
     return lo + seededRand() * (hi - lo);
+}
+
+function randRangeTris(tris) {
+    var v1 = [tris[1][0] - tris[0][0], tris[1][1] - tris[0][1]];
+    var v2 = [tris[2][0] - tris[0][0], tris[2][1] - tris[0][1]];
+    var range = seededRand();
+    var x = seededRand();
+    return [tris[0][0] + range*x*v1[0] + range*(1-x)*v2[0],
+            tris[0][1] + range*x*v1[1] + range*(1-x)*v2[1] ];
 }
 
 var rnorm = (function () {

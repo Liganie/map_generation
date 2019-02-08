@@ -113,7 +113,6 @@ function drawObject(svg, cls, o) {
 
 function drawObjects(svg, cls, objects) {
     for(var o=0; o<objects.length; o++) {
-        console.log(o);
         drawObject(svg, cls, objects[o]);
     }
 }
@@ -274,8 +273,9 @@ function drawCurvedPaths(svg, cls, paths, stroke_color, stroke_width, cardinal_t
     }
 }
 
-function drawArea(svg, cls, paths, fill_colors, stroke_width, extras) {
+function drawArea(svg, cls, paths, fill_colors, stroke_width, cardinal_tension, extras) {
     stroke_width = stroke_width || 0;
+    if(cardinal_tension==null) cardinal_tension =  0.5;
 
     var colors = [];
     for(var i=0; i<paths.length; i++) {
@@ -294,6 +294,7 @@ function drawArea(svg, cls, paths, fill_colors, stroke_width, extras) {
     var lineFunction = d3.line()
                                 .x(function(d) { return d.x; })
                                 .y(function(d) { return d.y; })
+                                .curve(d3.curveCardinalClosed.tension(cardinal_tension))
 
     var svg_path = [];
     for(var p=0; p<paths.length; p++) {

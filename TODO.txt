@@ -2,6 +2,8 @@ Prio 1
 	clean up
 	biomes
 
+Need a way to make some mountains bigger while remaining in the mountain areas
+Need to ensure that rivers can only grow bigger
 Need to create drawing function
 	Shall be able to specify textures for the fill
 	Add a notion of layer for the drawing

@@ -95,6 +95,9 @@ function TerrainDraw() {
         else {drawCurvedPaths(TerrainSVG, 'river', terrainRender.rivers, 'black', 2, 0);}
     }
 
+    if( (terrainOptions.drawTrigger == 'Coloring' || terrainOptions.drawTrigger == 'None') && selected_view == 'Map')
+        visualizeFeatures(TerrainSVG, terrainRender, TerrainParams);
+
     if (terrainOptions.cities && 
            !( (!terrainOptions.mapViewer && terrainOptions.drawTrigger == 'Terrain') || (terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') ) ) {
         drawCurvedPathsExtras(TerrainSVG, 'border', terrainRender.borders, 'black', 5, ['stroke-linecap', 'butt',

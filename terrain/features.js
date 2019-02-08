@@ -71,6 +71,46 @@ function getMountain(base_point, mountain_width, mountain_height) {
     return mountain;
 }
 
+function getTree(base_point, tree_width, tree_height) {
+    var tree = {};
+    tree.bounding_box = [[base_point[0]-tree_width/2, base_point[1]], [base_point[0]+tree_width/2, base_point[1]-tree_height] ] ;
+
+    tree.outline = [];
+    // Adding the trunk
+    tree.outline.push([ [base_point[0]-0.10*tree_width/2, base_point[1]-0.10*tree_height], 
+                        [base_point[0]-0.10*tree_width/2, base_point[1]],
+                        [base_point[0]+0.10*tree_width/2, base_point[1]],
+                        [base_point[0]+0.10*tree_width/2, base_point[1]-0.10*tree_height] ]);
+    // Adding the foliage
+    var path = [ [base_point[0], base_point[1]-0.10*tree_height] ];
+    var samples = 8; // Too many trees add complexity
+    for(var i=0; i<samples; i++) {
+        if(i>0 && seededRand()<0.50) { // Small dents in the folliage
+            path.push([base_point[0]-0.8*tree_width/(2*samples)*(samples-i), base_point[1] - 0.10*tree_height - 0.90*tree_height/samples*i]);
+        }
+        path.push([base_point[0]-tree_width/(2*samples)*(samples-i), base_point[1] - 0.10*tree_height - 0.90*tree_height/samples*i]);
+    }
+    path.push([base_point[0], base_point[1]-tree_height]);
+    var n = path.length;
+    for(var i=n-2; i>=0; i--) {
+        path.push( [2*base_point[0] - path[i][0], path[i][1]] )
+    }
+    tree.outline.push(path);
+
+
+    tree.area = tree.outline.slice();
+    tree.faded = [];
+
+    // Apply coloring rules
+    tree.area.colors = ['#661a00','#006622'];
+    tree.outline.colors = 'black';
+    tree.outline.strokes = 1;
+    tree.faded.colors = 'black';
+    tree.faded.strokes = [2, -1];
+
+    return tree;
+}
+
 function contour(h, level) {
     level = level || 0;
     var edges = [];

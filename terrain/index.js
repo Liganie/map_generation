@@ -170,10 +170,6 @@ function visualizeTerrain(svg, render, params) {
 }
 
 function visualizeAsMap(svg, render, params) {
-    var lo = 0;
-    var hi = d3.max(render.h);
-    var mappedvals = render.h.map(function (x) {return x > hi ? 1 : x > lo ? (x - lo) / (- hi + lo) : (x - lo) / (hi - lo)});
-
     drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.colors.sea); // draw the background
 
     var color = d3.scaleLinear()
@@ -187,20 +183,51 @@ function visualizeAsMap(svg, render, params) {
     drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
     drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
 
-    //drawArea(TerrainSVG, 'test', contour(render.biomes, biomeEnum.mountain-0.1), params.colors.dirt, 20);
+    var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
+    color = d3.scaleLinear()
+      .domain([0, 20])
+      .interpolate(d3.interpolateHcl)
+      .range([moutain_color, d3.rgb(params.colors.dirt)]);
+    for(var i=20;i>0;i--) {
+        drawArea(TerrainSVG, 'field', contour(render.biomes, biomeEnum.mountain-0.1), color(i), i, 0);
+    }
+    // for debugging purpose
+    //drawArea(TerrainSVG, 'test', contour(render.biomes, biomeEnum.mountain-0.1), 'blue');
+}
 
+function visualizeFeatures(svg, render, params) {
+    var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
+    
     var objects = [];
     for(var b=0; b<render.biomes.length; b++) {
-        if(render.biomes[b]==biomeEnum.mountain && seededRand()<0.25){//<0.25){
+
+        // Mountain biome handling
+        if(render.biomes[b]==biomeEnum.mountain && seededRand()<0.5){//<0.25){
             var neigh = neighbours(render.h.mesh, b);
             var count = 0;
             for(var n=0; n<neigh.length; n++) {
                 if(render.biomes[neigh[n]] == biomeEnum.mountain) count++;
             }
             var box = boundingBox(render.h.mesh.tris[b]);
-            var mountain = getMountain(box[0], box[1]/2*count, box[2]/2*count );
-            mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), params.colors.dirt];
+            var mountain = getMountain(box[0], box[1]/3*count, box[2]/3*count ); // No mountain shall be bigger than the enderlying hex
+            mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), moutain_color];
             objects.push(mountain);
+        }
+
+        // Forest biome handling
+        else if(render.biomes[b]==biomeEnum.forest){
+            var neigh = neighbours(render.h.mesh, b);
+            var box = boundingBox(render.h.mesh.tris[b]);
+            if(box[1]>box[2]/2) box[1] = box[2]/2;
+            box[1] = box[1]/4;
+            box[2] = box[2]/4;
+            for(var n=0; n<neigh.length; n++) {
+                var count = 0;
+                if(render.biomes[neigh[n]] == biomeEnum.forest) count++;
+                for(var i=0; i<3*(count+1);i++) {
+                    objects.push(getTree( randRangeTris(render.h.mesh.tris[b]) , box[1], box[2] ));
+                }
+            }
         }
     }
     objects.sort((a,b) => (a.bounding_box[0][1] > b.bounding_box[0][1] ) ? 1 : ((b.bounding_box[0][1]  > a.bounding_box[0][1] ) ? -1 : 0)); 
