@@ -112,30 +112,6 @@ function visualizeVoronoi(svg, field, lo, hi) {
     drawArea(svg, 'field', field.mesh.tris, colors);
 }
 
-function boundingBox(tris) {
-    //for debug purposed
-    //drawCurvedPaths(TerrainSVG, 'field', [tris], 'green', 2)
-
-    // sorting on y coordinates
-    var min=0;
-    var max=0;
-    for(var i=1; i<3; i++) {
-        if(tris[min][1] > tris[i][1]) min = i;
-        if(tris[max][1] < tris[i][1]) max = i;
-    }
-    var mid = (min+max==1)? 2 : ( (min+max==2) ? 1 : 0);
-
-    // The base is the point in the middle on the y axis as it allow for maximum width
-    var base = [tris[min][0] + (tris[max][0]-tris[min][0])/(tris[max][1]-tris[min][1])*(tris[mid][1]-tris[min][1]), tris[mid][1]];
-    var width = tris[mid][0] - base[0];
-    if(width<0) {
-        base[0] = base[0] + width;
-        width = -width;
-    }
-    var height = tris[max][1] - tris[min][1];
-    return [base, width, height];
-}
-
 function visualizeTerrain(svg, render, params) {
     var lo = 0;
     var hi = d3.max(render.h);
@@ -191,45 +167,109 @@ function visualizeAsMap(svg, render, params) {
     for(var i=20;i>0;i--) {
         drawArea(TerrainSVG, 'field', contour(render.biomes, biomeEnum.mountain-0.1), color(i), i, 0);
     }
-    // for debugging purpose
-    //drawArea(TerrainSVG, 'test', contour(render.biomes, biomeEnum.mountain-0.1), 'blue');
 }
 
 function visualizeFeatures(svg, render, params) {
-    var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
+    // for debugging purpose
+    //drawArea(TerrainSVG, 'test', contourRange(render.biomes, biomeEnum.grassland), 'white');
+    //drawArea(TerrainSVG, 'test', contourRange(render.biomes, biomeEnum.forest), 'green');
+    //drawArea(TerrainSVG, 'test', contourRange(render.biomes, biomeEnum.hill), 'blue');
+    //drawArea(TerrainSVG, 'test', contourRange(render.biomes, biomeEnum.mountain), 'yellow');
+
+    var mesh = [];
+    for(var i=0; i<Object.keys(biomeEnum).length; i++) mesh[i] = [];
+    for(var i=0; i<render.biomes.length; i++) {
+        mesh[render.biomes[i]].push(i);
+    }
 
     var objects = [];
-    for(var b=0; b<render.biomes.length; b++) {
 
-        // Mountain biome handling
-        if(render.biomes[b]==biomeEnum.mountain && seededRand()<0.5){//<0.25){
-            var neigh = neighbours(render.h.mesh, b);
-            var count = 0;
-            for(var n=0; n<neigh.length; n++) {
-                if(render.biomes[neigh[n]] == biomeEnum.mountain) count++;
-            }
-            var box = boundingBox(render.h.mesh.tris[b]);
-            var mountain = getMountain(box[0], box[1]/3*count, box[2]/3*count ); // No mountain shall be bigger than the enderlying hex
-            mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), moutain_color];
-            objects.push(mountain);
-        }
+    //* Forest handling
+    var num_tree = Math.floor(20000/params.npts*mesh[biomeEnum.forest].length);
+    for(var t=0; t<num_tree; t++) {
+        var n = randRangeInt(0, mesh[biomeEnum.forest].length-1);
+        var box = boundingBox(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]);
+        if(box[1]>box[2]/2) box[1] = box[2]/2;
+        box[1] = box[1] * Math.sqrt(params.npts)/150;
+        box[2] = box[2] * Math.sqrt(params.npts)/150;
+        objects.push(getTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2] ));
+    }//*/
 
-        // Forest biome handling
-        else if(render.biomes[b]==biomeEnum.forest){
-            var neigh = neighbours(render.h.mesh, b);
-            var box = boundingBox(render.h.mesh.tris[b]);
-            if(box[1]>box[2]/2) box[1] = box[2]/2;
-            box[1] = box[1]/4;
-            box[2] = box[2]/4;
-            for(var n=0; n<neigh.length; n++) {
-                var count = 0;
-                if(render.biomes[neigh[n]] == biomeEnum.forest) count++;
-                for(var i=0; i<3*(count+1);i++) {
-                    objects.push(getTree( randRangeTris(render.h.mesh.tris[b]) , box[1], box[2] ));
+    //* Mountain handling
+    var zones = contourRange(render.biomes, biomeEnum.mountain);
+    var moutainZones = [];
+    //initialization: we get the exact coutours of the biome areas.
+    for(var z=0; z<zones.length; z++) zones[z].contains = [zones[z]];
+    for(var z=0; z<zones.length; z++) {
+        var insideOf = [];
+        for(var z2=0; z2<zones.length; z2++) {
+            for(var p=0; p<zones[z].length; p++) {
+                if(z2==z) continue;
+                if( inside(zones[z][p], zones[z2]) ) { // This check is require to detect areas with holes
+                    insideOf.push(z2);
+                    break;
                 }
             }
         }
+        if(insideOf.length == 0) moutainZones.push(zones[z]);
+        else {
+            for(var i=0; i<insideOf.length; i++) zones[insideOf[i]].contains.push(zones[z])
+        }
     }
+
+    //we apply the same procedure as the trees, but modulate the size using the area boundaries
+    var num_moutains = Math.floor(1000/params.npts*mesh[biomeEnum.mountain].length);
+    for(var m=0; m<num_moutains; m++) {
+        var n = randRangeInt(0, mesh[biomeEnum.mountain].length-1);
+        var point = randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.mountain][n]]);
+        var zone = null;
+        //drawPoints(svg, 'test', [point], 5, 'blue', 2, 'red');
+        for(var z=0; z<zones.length; z++) {
+            if(inside(point, zones[z])) {
+                zone = zones[z];
+                break;
+            }
+        }
+        if(zone == null) continue; // could use a better way to ensure all mountains are placed
+        var boundaries = [];
+        for(var c=0; c<zone.contains.length; c++) {
+            for(var p=0; p<zone.contains[c].length-1; p++) {
+                if( (zone.contains[c][p][1] > point[1] && zone.contains[c][p+1][1] < point[1])
+                  ||(zone.contains[c][p][1] < point[1] && zone.contains[c][p+1][1] > point[1]) )
+                    boundaries.push([zone.contains[c][p], zone.contains[c][p+1]]);
+            }
+        }
+        var range = [1e9, 1e9];
+        for(var b=0; b<boundaries.length; b++) {
+            var box = boundingBox([boundaries[b][0], boundaries[b][1], point]); // As the point is always between the two boudary point by construction
+            var x = box[1];
+            var sign = box[3];
+            if(Math.abs(range[0]) > Math.abs(x)) {
+                if(Math.abs(range[0])+Math.abs(range[1])<2*0.01) continue;
+                range[1] = range[0]; // we keep the second biggest in case the first one is too small -> in that case we will move the central point along
+                range[0] = Math.abs(x)*sign
+            }
+        }
+        if(Math.abs(range[0])<0.01) {
+            point[0] = 0.01*Math.sign(range[0]) - range[0] + point[0];
+            range[0] = 0.01;
+        }
+
+        // Applying limits
+        range[0] = Math.max(0.01, 0.5*Math.abs(range[0]));
+        range[1] = Math.min(0.025, Math.abs(range[0]))
+        if(range[0] > range[1]) range[0] = range[1];
+        range[0] = randRangeFloat(range[0], range[1]);
+        // Correcting the positions
+        point[0] = point[0] - range[0];
+        range[0] = 2*range[0];
+
+        var mountain = getMountain(point, range[0], randRangeFloat(0.75*range[0], 1.25*range[0]) );
+        var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
+        mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), moutain_color];
+        objects.push(mountain);
+    }//*/
+
     objects.sort((a,b) => (a.bounding_box[0][1] > b.bounding_box[0][1] ) ? 1 : ((b.bounding_box[0][1]  > a.bounding_box[0][1] ) ? -1 : 0)); 
     drawObjects(svg, 'field', objects);
 }

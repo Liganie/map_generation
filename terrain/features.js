@@ -126,6 +126,30 @@ function contour(h, level) {
     return mergeSegments(edges);
 }
 
+function contourRange(h, level1, level2) {
+    level1 = level1 || 0;
+    if(typeof level2 == "undefined") level2 = level1;
+    if(level1>level2) {
+        var temp = level1;
+        level1 = level2;
+        level2 = temp;
+    }
+
+    var edges = [];
+    for (var i = 0; i < h.mesh.edges.length; i++) {
+        var e = h.mesh.edges[i];
+        if (e[3] == undefined) continue;
+        //if (isnearedge(h.mesh, e[0]) || isnearedge(h.mesh, e[1])) continue; // Small modification: we want closed borders here
+        if ((h[e[0]] > level2 && h[e[1]] <= level2 && h[e[1]] >= level1 ) ||
+            (h[e[1]] > level2 && h[e[0]] <= level2 && h[e[0]] >= level1 ) ||
+            (h[e[0]] < level1 && h[e[1]] <= level2 && h[e[1]] >= level1 ) ||
+            (h[e[1]] < level1 && h[e[0]] <= level2 && h[e[0]] >= level1 )) {
+            edges.push([e[2], e[3]]);
+        }
+    }
+    return mergeSegments(edges);
+}
+
 function getRivers(h, limit) {
     var dh = downhill(h);
     var flux = getFlux(h);

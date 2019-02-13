@@ -120,7 +120,8 @@ function drawObjects(svg, cls, objects) {
 function drawPoints(svg, cls, points, radius, stroke_color, stroke_width, fill_color) {
     // Need to ensure that radius is an array of the same size
 
-    data = points;
+    data = points.slice();
+    for(var i=0; i<points.length; i++) data[i] = points[i].slice();
     for(var i=0; i<points.length; i++) {
         if( typeof(radius) == 'number') {// It is a scalar
             data[i][2] = radius; //
