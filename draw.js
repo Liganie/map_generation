@@ -104,9 +104,25 @@ function convertToD3(array) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 function drawObject(svg, cls, o) {
-    drawArea(svg, cls, o.area, o.area.colors);
-    drawCurvedPaths(svg, cls, o.outline, o.outline.colors, o.outline.strokes);
-    drawCurvedPaths(svg, cls, o.faded, o.faded.colors, o.faded.strokes);
+    var cardinal_tension;
+    var stroke_color;
+    for(var layer in o) {
+        //default checks
+        if(layer == "bounding_box") continue;
+        cardinal_tension = (typeof o[layer].cardinal_tension == 'undefined') ? 0.5 : o[layer].cardinal_tension;
+        stroke_color = (typeof o[layer].stroke_color == 'undefined') ? '#000000' : o[layer].stroke_color;
+
+        //processing
+        if(typeof o[layer].fill_colors != 'undefined')
+            drawArea(svg, cls, o[layer].paths, o[layer].fill_colors, 0, cardinal_tension);
+        if(typeof o[layer].stroke_sizes != 'undefined')
+            drawCurvedPaths(svg, cls, o[layer].paths, stroke_color, o[layer].stroke_sizes, cardinal_tension);
+    }//*/
+
+    //drawArea(svg, cls, o.area, o.area.colors, 0, 0.5); // To align with the default values of the other two
+    //drawCurvedPaths(svg, cls, o.outline, o.outline.colors, o.outline.strokes);
+    //drawCurvedPaths(svg, cls, o.faded, o.faded.colors, o.faded.strokes);
+    
     // for debug purposes
     //drawCurvedPaths(svg, cls, [o.bounding_box], 'red', 2, 0);
 }

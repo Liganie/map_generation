@@ -1,4 +1,7 @@
 Add a label to display the progress
+Add a refresh button
+	This will apply the new parameters to the current seed
+	This could allow to regenerate only what we want (more or less cities, color and other visual change, etc)
 Need a way to make some mountains bigger while remaining in the mountain areas
 Need a way to generate a map that is not dependent on the grid
 	Need to get ouly the contours of the coasts / biomes and work from there

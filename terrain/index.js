@@ -192,7 +192,7 @@ function visualizeFeatures(svg, render, params) {
         if(box[1]>box[2]/2) box[1] = box[2]/2;
         box[1] = box[1] * Math.sqrt(params.npts)/150;
         box[2] = box[2] * Math.sqrt(params.npts)/150;
-        objects.push(getTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2] ));
+        objects.push(getPineTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2] ));
     }//*/
 
     //* Mountain handling
@@ -266,7 +266,7 @@ function visualizeFeatures(svg, render, params) {
 
         var mountain = getMountain(point, range[0], randRangeFloat(0.75*range[0], 1.25*range[0]) );
         var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
-        mountain.area.colors = [d3.rgb(params.colors.dirt).darker(1), moutain_color];
+        mountain.base.fill_colors = [d3.rgb(params.colors.dirt).darker(1), moutain_color];
         objects.push(mountain);
     }//*/
 
