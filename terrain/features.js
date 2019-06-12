@@ -23,53 +23,11 @@ function placeCity(render) {
 function placeCities(render) {
     var params = render.params;
     var h = render.h;
-    var n = params.ncities;
+    var n = params.engine.population.numberCities;
     for (var i = 0; i < n; i++) {
         placeCity(render);
     }
 }
-
-/*function getMountain(base_point, mountain_width, mountain_height) {
-    var mountain = {};
-    mountain.bounding_box = [base_point, [base_point[0]+mountain_width, base_point[1]-mountain_height] ] ;
-
-    var primary_path = [base_point, [base_point[0]+mountain_width/2, base_point[1]-mountain_height],[base_point[0]+mountain_width, base_point[1]]];
-    primary_path[1][0] =  primary_path[1][0] + randRangeFloat(-mountain_width/4, mountain_width/4); // moving the peak a bit
-
-    var path = []; // The mountain outline
-    var samples = 8;
-    var dynamic_range = [];
-    for(var i=0; i<2; i++) {
-        path.push(primary_path[i]);
-        dynamic_range = [primary_path[i+1][0]-primary_path[i][0], primary_path[i+1][1]-primary_path[i][1]]
-        for(var s=1; s<samples; s++) {
-            path.push( [primary_path[i][0] + s/(samples+1)*dynamic_range[0] + randRangeFloat(-1, 1)*dynamic_range[0]/(2*samples), // Range to avoid crossing
-                        primary_path[i][1] + s/(samples+1)*dynamic_range[1] + randRangeFloat(-1, 1)*dynamic_range[1]/samples ] ); // Range to allow crossing
-        }
-    }
-    path.push(primary_path[2]);
-    mountain.outline = [path];
-
-    path = [primary_path[1]]; // the inside path form the top
-    dynamic_range = [mountain_width, mountain_height];
-    for(var s=1; s<samples+2; s++) {
-        path.push( [primary_path[1][0] + randRangeFloat(-1, 1)*dynamic_range[0]/(2*samples), // Range to avoid crossing
-                    primary_path[1][1] + s/(samples)*dynamic_range[1] + randRangeFloat(-1, 1)*dynamic_range[1]/(2*samples) ] ); // Range to avoid crossing
-    }
-    mountain.faded = [path];
-
-    mountain.area = [ mountain.outline[0].slice(0, samples+1).concat(mountain.faded[0]), 
-                      mountain.outline[0].slice(samples, 2*samples+1).reverse().concat(mountain.faded[0]) ];
-
-    // Apply coloring rules
-    mountain.area.colors = ['#cccccc','#eeeeee'];
-    mountain.outline.colors = 'black';
-    mountain.outline.strokes = 2;
-    mountain.faded.colors = 'black';
-    mountain.faded.strokes = [2, -1];
-
-    return mountain;
-}*/
 
 function getMountain(base_point, mountain_width, mountain_height) {
     var mountain = {};
@@ -140,47 +98,6 @@ function getPineTree(base_point, tree_width, tree_height) {
                                [base_point[0]+tree_width/2,base_point[1]-0.10*tree_height],
                                [base_point[0]+0.02*tree_width, base_point[1]-tree_height] ] ],
                   stroke_sizes: 1};
-
-    return tree;
-}
-
-
-function getPalmTree(base_point, tree_width, tree_height) {
-
-    // IDEA
-    // Get curvature on the truck
-    // Then add leaves on both side (1-3 leaves per sides)
-    // Minimum of 3 leaves (thus need to be aware of the thing
-    // Tough point will be to add the notion of layer to object
-    // Or to do it without, but it gets more complicated then
-
-
-    var tree = {};
-    tree.bounding_box = [[base_point[0]-tree_width/2, base_point[1]], [base_point[0]+tree_width/2, base_point[1]-tree_height] ] ;
-
-    tree.outline = [];
-    // Adding the trunk
-    tree.outline.push([ [base_point[0]-0.10*tree_width/2, base_point[1]-0.10*tree_height], 
-                        [base_point[0]-0.10*tree_width/2, base_point[1]],
-                        [base_point[0]+0.10*tree_width/2, base_point[1]],
-                        [base_point[0]+0.10*tree_width/2, base_point[1]-0.10*tree_height] ]);
-    // Adding the foliage   
-    tree.outline.push([ [base_point[0]-0.02*tree_width, base_point[1]-tree_height],
-                        [base_point[0]-tree_width/2,base_point[1]-0.10*tree_height],
-                        [base_point[0],base_point[1]-0.10*tree_height],
-                        [base_point[0]+tree_width/2,base_point[1]-0.10*tree_height],
-                        [base_point[0]+0.02*tree_width, base_point[1]-tree_height] ]);
-
-
-    tree.area = tree.outline.slice();
-    tree.faded = [];
-
-    // Apply coloring rules
-    tree.area.colors = ['#661a00','#006622'];
-    tree.outline.colors = 'black';
-    tree.outline.strokes = 1;
-    tree.faded.colors = 'black';
-    tree.faded.strokes = [2, -1];
 
     return tree;
 }
@@ -303,7 +220,7 @@ function getRivers(h, limit) {
 function getTerritories(render) {
     var h = render.h;
     var cities = render.cities;
-    var n = render.params.nterrs;
+    var n = render.params.engine.population.numberTerritories;
     if (n > render.cities.length) n = render.cities.length;
     var flux = getFlux(h);
     var terr = [];

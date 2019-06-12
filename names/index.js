@@ -63,22 +63,27 @@ function startMarkovGUI() {
 
 function getNameGenerator(params) {
     var generator = makeRandomLanguage();
-    switch (params.nameGenerator) {
+    switch (params.engine.nameGenerator.type) {
         case "Markov":
-            generator = new Markov();
+            generator = new Markov(params.engine.nameGenerator.markovParameters.dictionnary,
+                                   params.engine.nameGenerator.markovParameters.order,
+                                   params.engine.nameGenerator.markovParameters.prior);
             break;
         case "Mewo":
             generator = makeRandomLanguage();
             break;
     }
+    // reinitialize the structure to generate new names
+    terrainParams.features.cities.cityNames = [];
+    terrainParams.features.cities.regionNames = [];
     return generator;
 }
 
 function getName(params, lang, key) {
-    var generator = params.nameGenerator;
+    var generator = params.engine.nameGenerator.type;
 
     if (generator == "Markov") {
-        return lang.generate(1);
+        return lang.generate(1, params.engine.nameGenerator.markovParameters.numberLetters[0], params.engine.nameGenerator.markovParameters.numberLetters[1]);
     }
     else{
         return makeName(lang, 'city');
@@ -95,10 +100,24 @@ function drawLabels(svg, render) {
     var h = render.h;
     var terr = render.terr;
     var cities = render.cities;
-    var nterrs = render.params.nterrs;
+    var nterrs = render.params.engine.population.numberTerritories;
     var avoids = [render.rivers, render.coasts, render.borders];
-    var lang = getNameGenerator(params);
+    var lang = render.dictionnary;
     var citylabels = [];
+
+    if(params.features.cities.cityNames.length == 0) {
+        for (var i = 0; i < cities.length; i++) {
+            terrainParams.features.cities.cityNames.push( getName(params, lang, 'city') );
+        }
+    }
+    var cityNames = terrainParams.features.cities.cityNames;
+    if(params.features.cities.regionNames.length == 0) {
+       for (var i = 0; i < nterrs; i++) {
+            terrainParams.features.cities.regionNames.push( getName(params, lang, 'region') );
+        }
+    }
+    var regionNames = terrainParams.features.cities.regionNames;
+
     function penalty(label) {
         var pen = 0;
         if (label.x0 < -0.45 * h.mesh.extent.width) pen += 100;
@@ -136,8 +155,8 @@ function drawLabels(svg, render) {
     for (var i = 0; i < cities.length; i++) {
         var x = h.mesh.vxs[cities[i]][0];
         var y = h.mesh.vxs[cities[i]][1];
-        var text = getName(params, lang, 'city');
-        var size = i < nterrs ? params.fontsizes.city : params.fontsizes.town;
+        var text = cityNames[i];
+        var size = i < nterrs ? params.renderer.fontSizes.city : params.renderer.fontSizes.town;
         var sx = 0.65 * size/1000 * text.length;
         var sy = size/1000;
         var posslabels = [
@@ -200,8 +219,8 @@ function drawLabels(svg, render) {
     var reglabels = [];
     for (var i = 0; i < nterrs; i++) {
         var city = cities[i];
-        var text = getName(params, lang, 'region');
-        var sy = params.fontsizes.region / 1000;
+        var text = regionNames[i];
+        var sy = params.renderer.fontSizes.region / 1000;
         var sx = 0.6 * text.length * sy;
         var lc = terrCenter(h, terr, city, true);
         var oc = terrCenter(h, terr, city, false);

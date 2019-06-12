@@ -3,11 +3,99 @@ initialize(); //to ensure debug is possible
 ////////////////////////////////////////////////////////////////////////////////////
 //////////                   PARAMETER HANDLING                      ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
-parseJsonAndUpdate();
+// The following functions are all realted to the parameter view
+function enableCollapsible() {
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    }
+}
+
+paramsEditor = null;
+function initializeJsoneditor() {
+    var container = document.getElementById('jsoneditor');
+    var options = {
+      mode: 'form',
+      modes: ['code', 'form'], // allowed modes
+      onError: function (err) {
+        //alert(err.toString());
+      }
+    };
+    paramsEditor = new JSONEditor(container, options, terrainParams);
+    paramsEditor.expandAll();
+}
+
+function updateJsoneditor() {
+    terrainParams.engine.seed.currentSeed = currentSeed;
+    paramsEditor.setText(JSON.stringify(terrainParams, null, 2));
+    paramsEditor.expandAll();
+}
+
+var currentDictionnary = null;
+var currentDictionnaryGenerator = null;
 function parseJsonAndUpdate() {
-    var ioParamsStr = document.getElementById("ioParameters").value;
-    if (ioParamsStr.length > 0) TerrainParams = JSON.parse(ioParamsStr);
-    document.getElementById("ioParameters").innerHTML = JSON.stringify(TerrainParams, null, 2);
+    terrainParams = JSON.parse(paramsEditor.getText());
+
+    // special case to regenerate the names if the name generator changes
+    if(currentDictionnary == null) currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
+    if(currentDictionnaryGenerator == null) currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
+    if(currentDictionnary !== terrainParams.engine.nameGenerator.markovParameters.dictionnary
+       || currentDictionnaryGenerator !== terrainParams.engine.nameGenerator.type) {
+        terrainRender.dictionnary = getNameGenerator(terrainParams);
+        currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
+        currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
+    }
+
+    if(terrainRender!==null) {
+        terrainRender.params = terrainParams;
+        terrainOptions.drawTrigger = 'None';
+        TerrainDraw();
+    }
+}
+
+function saveJson() {
+    var jsonParams = JSON.parse(paramsEditor.getText());
+    var jsonData = JSON.stringify(jsonParams, null, 2);
+    var jsonBlob = new Blob([jsonData], {type:"application/json: text/plain"});
+    var jsonUrl = URL.createObjectURL(jsonBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = jsonUrl;
+    downloadLink.download = "parameters";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
+function loadJson() {
+
+    var input = document.createElement('input');
+    input.type = 'file';
+
+    input.onchange = e => {        
+       var file = e.target.files[0]; // getting a hold of the file reference
+       // setting up the reader
+       var reader = new FileReader();
+       reader.readAsText(file,'UTF-8');
+       // here we tell the reader what to do when it's done reading...
+       reader.onload = readerEvent => {
+          var content = readerEvent.target.result; // this is the content!
+          paramsEditor.setText(content);
+          paramsEditor.expandAll();
+       }
+
+    }
+
+    input.click();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -42,8 +130,9 @@ function TerrainDraw() {
     var selected_view = d3.select('select').property('value'); // background coloring
 
     if (terrainRender==null) { // Special case for the very first map creation
-        terrainRender = doTerrain(TerrainSVG, TerrainParams);
+        terrainRender = doTerrain(TerrainSVG, terrainParams);
         terrainOptions.drawTrigger = 'None';
+        updateJsoneditor();
     }
 
     // clear renderer
@@ -81,8 +170,8 @@ function TerrainDraw() {
         else if (selected_view == 'Biomes')     {visualizeVoronoi(TerrainSVG, terrainRender.biomes);}
         else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
         else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
-        else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, TerrainParams);}
-        else if (selected_view == 'Map')   {visualizeAsMap  (TerrainSVG, terrainRender, TerrainParams);}
+        else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, terrainParams);}
+        else if (selected_view == 'Map')        {visualizeAsMap  (TerrainSVG, terrainRender, terrainParams);}
     }
 
     if(terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') { // Only need to redraw the rivers when we are remving the background to put the black and white map
@@ -96,7 +185,7 @@ function TerrainDraw() {
     }
 
     if( (terrainOptions.drawTrigger == 'Coloring' || terrainOptions.drawTrigger == 'None') && selected_view == 'Map')
-        visualizeFeatures(TerrainSVG, terrainRender, TerrainParams);
+        visualizeFeatures(TerrainSVG, terrainRender, terrainParams);
 
     if (terrainOptions.cities && 
            !( (!terrainOptions.mapViewer && terrainOptions.drawTrigger == 'Terrain') || (terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') ) ) {
@@ -107,6 +196,7 @@ function TerrainDraw() {
                                                                                         'stroke-location', 'inner']);
         visualizeCities(TerrainSVG, terrainRender);
         drawLabels(TerrainSVG, terrainRender);
+        updateJsoneditor(); // in case a new dictionnary is applied, we save the names
     }
 }
 
@@ -120,10 +210,11 @@ var ViewCombobox = TerrainDiv.append("select")
 TerrainDiv.append("button")
     .text("Generate new Map")
     .on("click", function () {
-        if (terrainRender != null) seededRand = seededRandom();
-        terrainRender = doTerrain(TerrainSVG, TerrainParams);
+        if (terrainRender != null) seededRand = !terrainParams.engine.seed.changeOnGeneration ? seededRandom(currentSeed): seededRandom();
+        terrainRender = doTerrain(TerrainSVG, terrainParams);
         terrainOptions.drawTrigger = 'None';
         TerrainDraw();
+        updateJsoneditor();
     });
 
 var TerrainBut = TerrainDiv.append("button")

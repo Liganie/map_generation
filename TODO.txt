@@ -1,15 +1,9 @@
+Add footer with reference to github for contact
+Use jsoneditor to add checks on values and constrain the content
+	for the generator type
+	of the color type
 Add a label to display the progress
-Add a refresh button
-	This will apply the new parameters to the current seed
-	This could allow to regenerate only what we want (more or less cities, color and other visual change, etc)
 Need a way to make some mountains bigger while remaining in the mountain areas
-Need a way to generate a map that is not dependent on the grid
-	Need to get ouly the contours of the coasts / biomes and work from there
-	This would alow more control over size / density
-	This would allow to set a level of details as well
-	This would require to be able to set a random point in a complex shape
-		Need to create a new grid from the shape
-		Need probabilities equals to the area of the triangle
 Re organize everything
 	features
 		cities
@@ -19,9 +13,6 @@ Re organize everything
 	terrain
 		coast
 		terrain itself
-City name change at each show/hide cities
-	this could be a feature
-	or this could be fixed through the handling of the seeded generator
 Try different type of generator for names
 	Add different prefix or suffix to names depending on the culture (dungon/fort for instance)
 	Potentially add a generator using adjectives / name like ironhaven or sandcity
@@ -29,14 +20,11 @@ Try different type of generator for terrain
 	using polygons
 	using noise
 	potentially different sampling for the coasts
-Add posibility to change water, terrain, biome and elevevation color, potentially per region
-	possiblity to edit the color in a dedicated window
+Add posibility to change water, terrain, biome and elevevation color,  per region
 possibility to change texture and renderings
 Change the city creation to contain more city types
 Change the city generation to be population / region based instead of capital based
 Change the region generation to be of different sizes or contain more than one big city (but only one capital)
-Try to be able to hide paramter window in a foldable fashion
-Fix the terrain generator to be able to used multiple time the same elements
 Add lakes
 Add different cultures into the game, one per region at max
 

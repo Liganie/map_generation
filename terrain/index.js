@@ -14,7 +14,7 @@ include('terrain/features.js');
 
 function getTerrainGenerator(params) {
     var generator = generateCoast;
-    switch (params.terrainGenerator) {
+    switch (params.engine.terrainGenerator.type) {
         case "Coast":
             generator = generateCoast;
             break;
@@ -26,43 +26,43 @@ function getTerrainGenerator(params) {
 }
 
 function generateIsland(params) {
-    var mesh = generateGoodMesh(params.npts, params.extent);
+    var mesh = generateGoodMesh(params.engine.baseGrid.numberPoints, params.engine.baseGrid.extent);
     var h = add(
             //slope(mesh, randomVector(4)),
             cone(mesh, -1),
             //pike(mesh, 2),
-            mountainsCentered(mesh, 50, 0.80),
+            mountainsCentered(mesh, params.engine.terrainGenerator.islandParameters.baseLandmassNumber, 0.80),
             //mountains(mesh, 50),
             //forceBorders(mesh, 10),
             //sinks(mesh, 50),
             );
 
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < params.engine.terrainGenerator.islandParameters.relaxLevel; i++) {
         h = relax(h);
     }
     h = peaky(h);
-    h = doErosion(h, randRangeFloat(0, 0.1), 5);
-    h = setSeaLevel(h, randRangeFloat(0.4, 0.6));
-    h = fillSinks(h);
-    h = cleanCoast(h, 3);
+    h = doErosion(h, randRangeFloat(0, 0.1), params.engine.terrainGenerator.islandParameters.erosionLevel);
+    h = setSeaLevel(h, randRangeFloat(params.engine.terrainGenerator.islandParameters.seaLevelRange[0], params.engine.terrainGenerator.islandParameters.seaLevelRange[1]));
+    if(params.engine.terrainGenerator.islandParameters.fillSinks) h = fillSinks(h);
+    h = cleanCoast(h, params.engine.terrainGenerator.islandParameters.coastSmoothingLevel);
     return h;
 }
 
 function generateCoast(params) {
-    var mesh = generateGoodMesh(params.npts, params.extent);
+    var mesh = generateGoodMesh(params.engine.baseGrid.numberPoints, params.engine.baseGrid.extent);
     var h = add(
             slope(mesh, randomVector(4)),
             cone(mesh, randRangeFloat(-1, -1)),
-            mountains(mesh, 50)
+            mountains(mesh, params.engine.terrainGenerator.coastParameters.baseLandmassNumber)
             );
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < params.engine.terrainGenerator.coastParameters.relaxLevel; i++) {
         h = relax(h);
     }
     h = peaky(h);
-    h = doErosion(h, randRangeFloat(0, 0.1), 5);
-    h = setSeaLevel(h, randRangeFloat(0.2, 0.6));
-    h = fillSinks(h);
-    h = cleanCoast(h, 3);
+    h = doErosion(h, randRangeFloat(0, 0.1), params.engine.terrainGenerator.coastParameters.erosionLevel);
+    h = setSeaLevel(h, randRangeFloat(params.engine.terrainGenerator.coastParameters.seaLevelRange[0], params.engine.terrainGenerator.coastParameters.seaLevelRange[1]));
+    if(params.engine.terrainGenerator.coastParameters.fillSinks) h = fillSinks(h);
+    h = cleanCoast(h, params.engine.terrainGenerator.coastParameters.coastSmoothingLevel);
     return h;
 }
 
@@ -71,13 +71,13 @@ function generateCoast(params) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 var colorSchemes = {
-    default: { sea: "#00b6dd", coasts: "#00d0ff", dirt: "#c9ae7b", mountains: "#ffffff" },
-    desert:  { sea: "#3399ff", coasts: "#66b3ff", dirt: "#ffe066", mountains: "#b37700" },
-    forest:  { sea: "#000066", coasts: "#0000cc", dirt: "#009900", mountains: "#003300" },
-    plains:  { sea: "#6699ff", coasts: "#99bbff", dirt: "#99e699", mountains: "#663300" },
-    rocks:   { sea: "#9999ff", coasts: "#ccccff", dirt: "#595959", mountains: "#d9d9d9" },
-    tundra:  { sea: "#6699ff", coasts: "#99bbff", dirt: "#e6f2ff", mountains: "#ffffff" },
-    vulcano: { sea: "#ff8000", coasts: "#ff9922", dirt: "#8d8d8d", mountains: "#1a001a" }
+    default: { sea: "#00b6dd", rivers: "#00d0ff", dirt: "#c9ae7b", mountainTop: "#ffffff" },
+    desert:  { sea: "#3399ff", rivers: "#66b3ff", dirt: "#ffe066", mountainTop: "#b37700" },
+    forest:  { sea: "#000066", rivers: "#0000cc", dirt: "#009900", mountainTop: "#003300" },
+    plains:  { sea: "#6699ff", rivers: "#99bbff", dirt: "#99e699", mountainTop: "#663300" },
+    rocks:   { sea: "#9999ff", rivers: "#ccccff", dirt: "#595959", mountainTop: "#d9d9d9" },
+    tundra:  { sea: "#6699ff", rivers: "#99bbff", dirt: "#e6f2ff", mountainTop: "#ffffff" },
+    vulcano: { sea: "#ff8000", rivers: "#ff9922", dirt: "#8d8d8d", mountainTop: "#1a001a" }
 }
 
 function visualizePoints(svg, pts) {
@@ -117,23 +117,25 @@ function visualizeTerrain(svg, render, params) {
     var hi = d3.max(render.h);
     var mappedvals = render.h.map(function (x) {return x > hi ? 1 : x > lo ? (x - lo) / (- hi + lo) : (x - lo) / (hi - lo)});
 
-    drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.colors.sea); // draw the background
+    drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.renderer.colors.sea); // draw the background
 
     var color = d3.scaleLinear()
       .domain([0, 3])
       .interpolate(d3.interpolateHcl)
-      .range([d3.rgb(params.colors.sea), d3.rgb(params.colors.coasts)]);
+      .range([d3.rgb(params.renderer.colors.sea), d3.rgb(params.renderer.colors.rivers)]);
 
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 51); // Draw the outline of the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 50); // Draw the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 35); // Draw the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
-    drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
+    if(params.features.coasts.colorGradient) {
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 51); // Draw the outline of the coasts
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 50); // Draw the coasts
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 35); // Draw the coasts
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
+    }
+    drawArea(svg, 'field', contour(render.h,0), params.renderer.colors.dirt); // draw the islands
 
     color = d3.scaleLinear()
       .domain([0, 0.5])
       .interpolate(d3.interpolateHcl)
-      .range([d3.rgb(params.colors.dirt), d3.rgb(params.colors.mountains)]);
+      .range([d3.rgb(params.renderer.colors.dirt), d3.rgb(params.renderer.colors.mountainTop)]);
     var colors = []; // initial values are for the background
     var mesh = [];
     for(var i=0; i<render.h.mesh.tris.length; i++) {
@@ -146,26 +148,30 @@ function visualizeTerrain(svg, render, params) {
 }
 
 function visualizeAsMap(svg, render, params) {
-    drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.colors.sea); // draw the background
+    drawArea(svg, 'field', [[[-1,-1],[-1,1],[1,1],[1,-1]]], params.renderer.colors.sea); // draw the background
 
     var color = d3.scaleLinear()
       .domain([0, 3])
       .interpolate(d3.interpolateHcl)
-      .range([d3.rgb(params.colors.sea), d3.rgb(params.colors.coasts)]);
+      .range([d3.rgb(params.renderer.colors.sea), d3.rgb(params.renderer.colors.rivers)]);
 
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 51); // Draw the outline of the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 50); // Draw the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 35); // Draw the coasts
-    drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
-    drawArea(svg, 'field', contour(render.h,0), params.colors.dirt); // draw the islands
+    if(params.features.coasts.colorGradient) {
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 51); // Draw the outline of the coasts
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(1), 50); // Draw the coasts
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(2), 35); // Draw the coasts
+        drawCurvedPathsExtras(svg, 'field', contour(render.h,0), color(3), 20); // Draw the coasts
+    }
+    drawArea(svg, 'field', contour(render.h,0), params.renderer.colors.dirt); // draw the islands
 
-    var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
-    color = d3.scaleLinear()
-      .domain([0, 20])
-      .interpolate(d3.interpolateHcl)
-      .range([moutain_color, d3.rgb(params.colors.dirt)]);
-    for(var i=20;i>0;i--) {
-        drawArea(TerrainSVG, 'field', contour(render.biomes, biomeEnum.mountain-0.1), color(i), i, 0);
+    if(params.features.mountains.markBiome) {
+        var moutain_color = d3.rgb(params.renderer.colors.dirt).darker( params.features.mountains.biomeShadeLevel );
+        color = d3.scaleLinear()
+          .domain([0, 20])
+          .interpolate(d3.interpolateHcl)
+          .range([moutain_color, d3.rgb(params.renderer.colors.dirt)]);
+        for(var i=20;i>0;i--) {
+            drawArea(TerrainSVG, 'field', contour(render.biomes, biomeEnum.mountain-0.1), color(i), i, 0);
+        }
     }
 }
 
@@ -185,14 +191,18 @@ function visualizeFeatures(svg, render, params) {
     var objects = [];
 
     //* Forest handling
-    var num_tree = Math.floor(20000/params.npts*mesh[biomeEnum.forest].length);
+    var num_tree = Math.floor(params.features.forests.density / params.engine.baseGrid.numberPoints*mesh[biomeEnum.forest].length);
     for(var t=0; t<num_tree; t++) {
         var n = randRangeInt(0, mesh[biomeEnum.forest].length-1);
         var box = boundingBox(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]);
         if(box[1]>box[2]/2) box[1] = box[2]/2;
-        box[1] = box[1] * Math.sqrt(params.npts)/150;
-        box[2] = box[2] * Math.sqrt(params.npts)/150;
-        objects.push(getPineTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2] ));
+        box[1] = box[1] * Math.sqrt(params.engine.baseGrid.numberPoints)/150 * params.features.forests.widthScaling;
+        box[2] = box[2] * Math.sqrt(params.engine.baseGrid.numberPoints)/150 * params.features.forests.heightScaling;
+
+        var tree = getPineTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2] );
+        tree.trunk.fill_colors = params.features.forests.pine.trunkColor;
+        tree.foliage.fill_colors = [params.features.forests.pine.foliageShade, params.features.forests.pine.foliageBase];
+        objects.push(tree);
     }//*/
 
     //* Mountain handling
@@ -218,7 +228,7 @@ function visualizeFeatures(svg, render, params) {
     }
 
     //we apply the same procedure as the trees, but modulate the size using the area boundaries
-    var num_moutains = Math.floor(1000/params.npts*mesh[biomeEnum.mountain].length);
+    var num_moutains = Math.floor(params.features.mountains.density / params.engine.baseGrid.numberPoints*mesh[biomeEnum.mountain].length);
     for(var m=0; m<num_moutains; m++) {
         var n = randRangeInt(0, mesh[biomeEnum.mountain].length-1);
         var point = randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.mountain][n]]);
@@ -264,9 +274,9 @@ function visualizeFeatures(svg, render, params) {
         point[0] = point[0] - range[0];
         range[0] = 2*range[0];
 
-        var mountain = getMountain(point, range[0], randRangeFloat(0.75*range[0], 1.25*range[0]) );
-        var moutain_color = d3.rgb(params.colors.dirt).darker(0.2);
-        mountain.base.fill_colors = [d3.rgb(params.colors.dirt).darker(1), moutain_color];
+        var mountain = getMountain(point, range[0], randRangeFloat(0.75*range[0], 1.25*range[0]) * params.features.mountains.heightScaling);
+        var moutain_color = params.features.mountains.markBiome ? d3.rgb(params.renderer.colors.dirt).darker(0.2) : params.renderer.colors.dirt;
+        mountain.base.fill_colors = [d3.rgb(params.renderer.colors.dirt).darker( params.features.mountains.shadeLevel ), moutain_color];
         objects.push(mountain);
     }//*/
 
@@ -329,7 +339,7 @@ function visualizeRivers(svg, render) {
         }
     }
     flux = render.rivers.map( function(d) {return d.map(function(x) {return (x.flux != null)? Math.sqrt(x.flux*400): 1;});});
-    drawCurvedPaths(svg, 'river', elongated, render.params.colors.coasts, flux, 0);
+    drawCurvedPaths(svg, 'river', elongated, render.params.renderer.colors.rivers, flux, 0);
 }
 
 function visualizeCities(svg, render) {
@@ -337,65 +347,117 @@ function visualizeCities(svg, render) {
     var radius = [];
     for(var i=0; i<render.cities.length; i++) {
         points[i] = [render.h.mesh.vxs[render.cities[i]][0], render.h.mesh.vxs[render.cities[i]][1]];
-        radius[i] = i >= render.params.nterrs ? 4 : 10;
+        radius[i] = i >= render.params.engine.population.numberTerritories ? 4 : 10;
     }
     drawPoints(svg, 'city', points, radius, 'black', 5, 'white');
 }
 
-var defaultParams = {
-    extent: {
-        width: 1,
-        height: 1
-    },
-    generator: generateCoast,
-    npts: 16384,
-    ncities: 15,
-    nterrs: 5,
-    fontsizes: {
-        region: 40,
-        city: 25,
-        town: 20
-    }
-}
+var terrainParams = {
+    engine: {
+        seed: {
+            changeOnGeneration: true,
+            currentSeed: 0
+        },
+        baseGrid: {
+            extent: {
+                width: 1,
+                height: 1
+            },
+            numberPoints: 16384
+        },
+        terrainGenerator: {
+            type: "Island",
+            islandParameters: {
+                baseLandmassNumber: 50,
+                relaxLevel: 10,
+                erosionLevel: 5,
+                seaLevelRange: [0.4, 0.6],
+                fillSinks: true,
+                coastSmoothingLevel: 3
+            },
+            coastParameters: {
+                baseLandmassNumber: 50,
+                relaxLevel: 10,
+                erosionLevel: 5,
+                seaLevelRange: [0.2, 0.6],
+                fillSinks: true,
+                coastSmoothingLevel: 3
+            }
+        },
+        nameGenerator: {
+            type: "Markov",
+            markovParameters: {
+                dictionnary: "random",
+                order: 3,
+                prior: 0.01,
+                numberLetters: [3, 15]
+            },
+            mewoParameters: {}
+        },
+        population: {
+            numberCities: 15,
+            numberTerritories: 5
+        },
+        biomes: {
 
-var TerrainParams = {
-    extent: {
-        width: 1,
-        height: 1
+        }
     },
-    terrainGenerator: "Island",
-    nameGenerator: "Markov",
-    npts: 16384,
-    //npts: 32768,
-    //npts: 65536,
-    ncities: 15,
-    nterrs: 5,
-    fontsizes: {
-        region: 40,
-        city: 25,
-        town: 20
+    renderer: {
+        fontSizes: {
+            region: 40,
+            city: 25,
+            town: 20
+        },
+        colors: {
+            type: 'random',
+            sea: '#00b6dd',
+            rivers: '#00d0ff',
+            dirt: '#c9ae7b',
+            mountainTop: '#ffffff'
+        }
     },
-    colors: {
-        template: 'random',
-        sea: '#00b6dd',
-        coasts: '#00d0ff',
-        dirt: '#c9ae7b',
-        mountains: '#ffffff'
+    features: {
+        coasts: {
+            colorGradient: true
+        },
+        mountains: {
+            density: 1000,
+            heightScaling: 1, 
+            markBiome: true,
+            biomeShadeLevel: 0.2,
+            shadeLevel: 1
+        },
+        forests: {
+            density: 20000,
+            heightScaling: 1,
+            widthScaling: 1,
+            pine: {
+                trunkColor: '#661a00',
+                foliageBase: '#32844e',
+                foliageShade: '#006622'
+            }
+        },
+        hills: {},
+        plains: {},
+        cities: {
+            cityNames: [],
+            regionNames: []
+        }
     }
 }
 
 function getColors(params) {
-    if(params.colors.template in colorSchemes) {
-        params.colors.sea = colorSchemes[params.colors.template].sea;
-        params.colors.coasts = colorSchemes[params.colors.template].coasts;
-        params.colors.dirt = colorSchemes[params.colors.template].dirt;
-        params.colors.mountains = colorSchemes[params.colors.template].mountains;
-    } else if (params.colors.template == 'random') {
+    if(params.renderer.colors.type in colorSchemes) {
+        params.renderer.colors.sea = colorSchemes[params.renderer.colors.type].sea;
+        params.renderer.colors.rivers = colorSchemes[params.renderer.colors.type].rivers;
+        params.renderer.colors.dirt = colorSchemes[params.renderer.colors.type].dirt;
+        params.renderer.colors.mountainTop = colorSchemes[params.renderer.colors.type].mountainTop;
+    } else if (params.renderer.colors.type == 'random') {
         var key = Object.keys(colorSchemes)[~~(seededRand() * Object.keys(colorSchemes).length)];
-        params.colors.sea = colorSchemes[key].sea;
-        params.colors.coasts = colorSchemes[key].coasts;
-        params.colors.dirt = colorSchemes[key].dirt;
-        params.colors.mountains = colorSchemes[key].mountains;
+        params.renderer.colors.sea = colorSchemes[key].sea;
+        params.renderer.colors.rivers = colorSchemes[key].rivers;
+        params.renderer.colors.dirt = colorSchemes[key].dirt;
+        params.renderer.colors.mountainTop = colorSchemes[key].mountainTop;
     }
     return params;
 }
@@ -405,13 +467,14 @@ function doTerrain(svg, params) {
         params: params
     };
     var width = svg.attr('width');
-    svg.attr('height', width * params.extent.height / params.extent.width);
-    svg.attr('viewBox', -1000 * params.extent.width/2 + ' ' + 
-                        -1000 * params.extent.height/2 + ' ' + 
-                        1000 * params.extent.width + ' ' + 
-                        1000 * params.extent.height);
+    svg.attr('height', width * params.engine.baseGrid.extent.height / params.engine.baseGrid.extent.width);
+    svg.attr('viewBox', -1000 * params.engine.baseGrid.extent.width/2 + ' ' + 
+                        -1000 * params.engine.baseGrid.extent.height/2 + ' ' + 
+                        1000 * params.engine.baseGrid.extent.width + ' ' + 
+                        1000 * params.engine.baseGrid.extent.height);
     svg.selectAll().remove();
     render.h = getTerrainGenerator(params)(params);
+    render.dictionnary = getNameGenerator(params);
     placeCities(render);
     renderTerrain(render);
 

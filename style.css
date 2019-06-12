@@ -78,10 +78,33 @@ button:hover {
     color: white;
 }
 
-
 select {
     background-color: white;
     border: solid 1px black;
     font-size: medium;
     margin-left: 0.5rem;
+}
+
+.collapsible {
+  cursor: pointer;
+  padding: 5px;
+  width: 95%;
+}
+
+.content {
+  display: none;
+  overflow: hidden;
+}
+
+/* Parameters related to the JSON editor*/
+
+#jsoneditorView {
+  height: auto;
+}
+
+#jsoneditor {
+  /* width: 500px; */
+  height: 750px;
+  margin-left: auto;
+  margin-right: auto;
 }
