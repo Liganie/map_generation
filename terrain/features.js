@@ -69,6 +69,22 @@ function getMountain(base_point, mountain_width, mountain_height) {
     return mountain;
 }
 
+function getTree(base_point, tree_width, tree_height, params, types) {
+    var tree;
+    var type = types[randRangeInt(0,types.length-1)];
+    if(type == 'Pine') {
+        tree = getPineTree( base_point, tree_width, tree_height );
+        tree.trunk.fill_colors = params.features.forests.pine.trunkColor;
+        tree.foliage.fill_colors = [params.features.forests.pine.foliageShade, params.features.forests.pine.foliageBase];
+    }
+    else if(type == 'Oak') {
+        tree = getOakTree( base_point, tree_width, tree_height );
+        tree.trunk.fill_colors = params.features.forests.oak.trunkColor;
+        tree.foliage.fill_colors = [params.features.forests.oak.foliageShade, params.features.forests.oak.foliageBase];
+    }
+    return tree;
+}
+
 function getPineTree(base_point, tree_width, tree_height) {
     var tree = {};
     tree.bounding_box = [[base_point[0]-tree_width/2, base_point[1]], [base_point[0]+tree_width/2, base_point[1]-tree_height] ] ;
@@ -98,6 +114,43 @@ function getPineTree(base_point, tree_width, tree_height) {
                                [base_point[0]+tree_width/2,base_point[1]-0.10*tree_height],
                                [base_point[0]+0.02*tree_width, base_point[1]-tree_height] ] ],
                   stroke_sizes: 1};
+
+    return tree;
+}
+
+function getOakTree(base_point, tree_width, tree_height) {
+    var tree = {};
+    tree.bounding_box = [[base_point[0]-tree_width/2, base_point[1]], [base_point[0]+tree_width/2, base_point[1]-tree_height] ] ;
+
+    // Adding the trunk
+    tree.trunk = {paths: [ [ [base_point[0]-0.20*tree_width/2, base_point[1]], 
+                             [base_point[0]-0.10*tree_width/2, base_point[1]-0.50*tree_height],
+                             [base_point[0]+0.10*tree_width/2, base_point[1]-0.50*tree_height],
+                             [base_point[0]+0.20*tree_width/2, base_point[1]] ] ],
+                  fill_colors: '#661a00',
+                  stroke_sizes: 1};
+
+    // Adding the foliage   
+    tree.foliage = {paths: [ [ [base_point[0]-0.02*tree_width, base_point[1]-tree_height], //base of the folliage
+                               [base_point[0]-tree_width/2,base_point[1]-2*tree_height/3],
+                               [base_point[0],base_point[1]-tree_height/3],
+                               [base_point[0]+tree_width/2,base_point[1]-2*tree_height/3],
+                               [base_point[0]+0.02*tree_width, base_point[1]-tree_height] ],
+                             [ [base_point[0]-0.02*tree_width, base_point[1]-tree_height], //shade of the folliage
+                               [base_point[0]-0.20*tree_width,base_point[1]-2*tree_height/3],
+                               [base_point[0],base_point[1]-1.20*tree_height/3],
+                               [base_point[0]+tree_width/2,base_point[1]-2*tree_height/3],
+                               [base_point[0]+0.02*tree_width, base_point[1]-tree_height] ] ],
+                   fill_colors: ['#72a604', '#9be006'],
+                   cardinal_tension: 0};
+
+    tree.outline = {paths: [ [ [base_point[0]-0.02*tree_width, base_point[1]-tree_height],
+                               [base_point[0]-tree_width/2,base_point[1]-2*tree_height/3],
+                               [base_point[0],base_point[1]-tree_height/3],
+                               [base_point[0]+tree_width/2,base_point[1]-2*tree_height/3],
+                               [base_point[0]+0.02*tree_width, base_point[1]-tree_height] ] ],
+                  stroke_sizes: 1,
+                  cardinal_tension: 0};
 
     return tree;
 }
@@ -290,7 +343,7 @@ function cleanBiome(biomes, nb_pass, base_biome, default_biome, min_neighbours, 
 var biomeEnum = Object.freeze({"sea":0, "grassland":1, "forest":2, "hill":3, "mountain":4})
 
 function getBiomes(render) {
-
+    var params = render.params;
     var biomes = [];
     
     for(var i=0; i<render.h.length; i++) {
@@ -302,7 +355,7 @@ function getBiomes(render) {
               || (render.slope[i] < 10 && render.h[i] < 0.1) ) { // special rule for the coasts, as the generator tends to make them steep
             biomes[i] = biomeEnum.grassland;
         }
-        else if(render.h[i] > 0.35) {
+        else if(render.h[i] > params.engine.biomes.mountainSlopeThreeshold) {
             biomes[i] = biomeEnum.mountain;
         }
     }
@@ -314,31 +367,41 @@ function getBiomes(render) {
 
     // Forests
     var grassIndex = [];
+    var forestType = new Map();
+    var types = ['Pine', 'Oak'];
     for(var i=0; i<render.h.length; i++) {
         if(biomes[i] == 1 && render.flux[i] < 0.0025) { // Forests only appear in Grasslands, were there is no rivers
-            if(seededRand()< 0.01) { // 1% chance per valid grassland to seed a forest
+            if(seededRand()< params.engine.biomes.treeSeedProbability) { // % chance per valid grassland to seed a forest
                 biomes[i] = biomeEnum.forest;
                 grassIndex[grassIndex.length] = i;
+                forestType.set(i, new Set([ types[randRangeInt(1,types.length)-1] ]) );
             }
         }
     }
 
     // Spreading the forests
     var index;
-    for(var pass=0; pass<10; pass++) {
+    for(var pass=0; pass<params.engine.biomes.treeSpreadingLevel; pass++) {
         index = Array.from(new Set(grassIndex)); // we avoid duplicated
         for(var i=0; i<index.length; i++) {
             var neigh = neighbours(biomes.mesh, index[i]);
             for(var n=0; n<neigh.length; n++) {
-                if( (biomes[neigh[n]] == biomeEnum.grassland || biomes[neigh[n]] == biomeEnum.hill) // we can spread on both hills and grasslands
+                if( (biomes[neigh[n]] == biomeEnum.grassland || biomes[neigh[n]] == biomeEnum.hill // we can spread on both hills and grasslands
+                    || biomes[neigh[n]] == biomeEnum.forest) //forests are use to differentiate tree type
                  && render.flux[neigh[n]] < 0.0025) { // We still exlude the rivers here to have clean rivers and cities
+                    if(biomes[neigh[n]] == biomeEnum.forest) {
+                        forestType.set(neigh[n], new Set([...forestType.get(neigh[n]), ...forestType.get(index[i])]) );
+                    }
+                    else {
+                        forestType.set(neigh[n], new Set(forestType.get(index[i])) );
+                    }
                     biomes[neigh[n]] = biomeEnum.forest;
                     grassIndex.push(neigh[n]);
                 }
             }
         }
     }
-
+    biomes.forestType = forestType;
     return biomes;
 }
 

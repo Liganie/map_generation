@@ -16,7 +16,9 @@ function initialize() {
          // we are on a server
          seededRand = seededRandom();
     }
-    terrainParams.engine.seed.currentSeed = currentSeed;
+    try {
+        terrainParams.engine.seed.currentSeed = currentSeed;
+    } catch (e) {}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

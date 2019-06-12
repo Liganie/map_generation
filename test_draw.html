@@ -45,8 +45,11 @@
                     var mountain = getMountain([x, y], 0.1, randRangeFloat(0.075, 0.15));
                     drawObject(svg, 'mountain', mountain);
 
-                    var tree = getPineTree([x, y], 0.015, 0.03);
-                    drawObject(svg, 'tree', tree);
+                    var pineTree = getPineTree([x, y], 0.015, 0.03);
+                    drawObject(svg, 'pine', pineTree);
+
+                    var oakTree = getOakTree([x+0.1, y], 0.015, 0.03);
+                    drawObject(svg, 'oak', oakTree);
                 }
             } //*/
 

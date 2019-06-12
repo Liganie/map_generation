@@ -199,10 +199,7 @@ function visualizeFeatures(svg, render, params) {
         box[1] = box[1] * Math.sqrt(params.engine.baseGrid.numberPoints)/150 * params.features.forests.widthScaling;
         box[2] = box[2] * Math.sqrt(params.engine.baseGrid.numberPoints)/150 * params.features.forests.heightScaling;
 
-        var tree = getPineTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2] );
-        tree.trunk.fill_colors = params.features.forests.pine.trunkColor;
-        tree.foliage.fill_colors = [params.features.forests.pine.foliageShade, params.features.forests.pine.foliageBase];
-        objects.push(tree);
+        objects.push( getTree( randRangeTris(render.biomes.mesh.tris[mesh[biomeEnum.forest][n]]) , box[1], box[2], params, Array.from(render.biomes.forestType.get(mesh[biomeEnum.forest][n])) ) );
     }//*/
 
     //* Mountain handling
@@ -399,7 +396,9 @@ var terrainParams = {
             numberTerritories: 5
         },
         biomes: {
-
+            mountainSlopeThreeshold: 0.35,
+            treeSeedProbability: 0.01,
+            treeSpreadingLevel: 10
         }
     },
     renderer: {
@@ -435,6 +434,11 @@ var terrainParams = {
                 trunkColor: '#661a00',
                 foliageBase: '#32844e',
                 foliageShade: '#006622'
+            },
+            oak: {
+                trunkColor: '#661a00',
+                foliageBase: '#32844e',
+                foliageShade: '#72a604'
             }
         },
         hills: {},
