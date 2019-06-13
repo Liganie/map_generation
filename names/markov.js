@@ -115,6 +115,9 @@ function Markov(input, order, prior) {
 
   this.minLetter = 9001;
   this.maxLetter = 0;
+  while(input.includes(',')) input = input.replace(/,/g, ' ');
+  while(input.includes('	')) input = input.replace(/	/g, ' ');
+  while(input.includes('  ')) input = input.replace(/  /g, ' ');
   var words = input.split(/\s/);
   for (w in words) {
     if (words[w].length < this.minLetter) {this.minLetter = words[w].length;}

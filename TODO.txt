@@ -1,3 +1,7 @@
+Implement cities
+	city can depend on civilisation
+	each region shall have its own building and color type
+implement path
 Add footer with reference to github for contact
 Use jsoneditor to add checks on values and constrain the content
 	for the generator type

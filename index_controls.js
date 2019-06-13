@@ -215,6 +215,8 @@ TerrainDiv.append("button")
         terrainOptions.drawTrigger = 'None';
         TerrainDraw();
         updateJsoneditor();
+        if(currentDictionnary == null) currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
+        if(currentDictionnaryGenerator == null) currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
     });
 
 var TerrainBut = TerrainDiv.append("button")
