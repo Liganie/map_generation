@@ -227,4 +227,4 @@ function inside(point, vs) {
     }
 
     return inside;
-};
+}

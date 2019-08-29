@@ -188,14 +188,14 @@ function TerrainDraw() {
         visualizeFeatures(TerrainSVG, terrainRender, terrainParams);
 
     if (terrainOptions.cities && 
-           !( (!terrainOptions.mapViewer && terrainOptions.drawTrigger == 'Terrain') || (terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring') ) ) {
+           !( !terrainOptions.mapViewer && terrainOptions.drawTrigger == 'Terrain') ) {
         drawCurvedPathsExtras(TerrainSVG, 'border', terrainRender.borders, 'black', 5, ['stroke-linecap', 'butt',
                                                                                         'stroke-dasharray', [4,4],
                                                                                         'stroke-alignment', 'inner',
                                                                                         'stroke-position', 'inner',
                                                                                         'stroke-location', 'inner']);
-        visualizeCities(TerrainSVG, terrainRender);
-        drawLabels(TerrainSVG, terrainRender);
+        if (!(selected_view == 'Map' && terrainParams.features.cities.doCities)) visualizeCities(TerrainSVG, terrainRender);
+        if(!(terrainOptions.drawTrigger == 'Coloring' && selected_view == 'No coloring')) drawLabels(TerrainSVG, terrainRender);
         updateJsoneditor(); // in case a new dictionnary is applied, we save the names
     }
 }

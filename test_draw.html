@@ -37,13 +37,14 @@
             svg.attr('viewBox', -1000/2 + ' ' + -1000/2 + ' ' + 1000 + ' ' + 1000 );
 
 
-            //var mountain = getMountain([0, 0], 0.1, 0.1);
-            //drawObject(mountain);
-            //*
             for(var x=-0.5; x<0.5; x+=0.2) {
                 for(var y=-0.55; y<0.6; y+=0.2) {
                     var mountain = getMountain([x, y], 0.1, randRangeFloat(0.075, 0.15));
                     drawObject(svg, 'mountain', mountain);
+
+                    var city_type = randRangeInt(0,1);
+                    var city = getCity([x, y], 0.1/(1+city_type), 0.1, city_type==0? "city": "town");
+                    drawObject(svg, 'city', city);
 
                     var pineTree = getPineTree([x, y], 0.015, 0.03);
                     drawObject(svg, 'pine', pineTree);

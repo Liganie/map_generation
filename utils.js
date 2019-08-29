@@ -10,7 +10,11 @@ function initialize() {
        case 'file:': 
          //local file
         seededRand = seededRandom(12345678);
-        if (typeof terrainParams !== 'undefined') terrainParams.engine.baseGrid.numberPoints = 2048;
+        if (typeof terrainParams !== 'undefined') {
+            terrainParams.engine.baseGrid.numberPoints = 2048;
+            terrainParams.features.mountains.density = 100;
+            terrainParams.features.forests.density = 2000;
+        }
          break;
        default: 
          // we are on a server

@@ -133,7 +133,7 @@ function drawLabels(svg, render) {
         }
 
         for (var i = 0; i < cities.length; i++) {
-            var c = h.mesh.vxs[cities[i]];
+            var c = cities.positions[i];
             if (label.x0 < c[0] && label.x1 > c[0] && label.y0 < c[1] && label.y1 > c[1]) {
                 pen += 100;
             }
@@ -153,8 +153,8 @@ function drawLabels(svg, render) {
         return pen;
     }
     for (var i = 0; i < cities.length; i++) {
-        var x = h.mesh.vxs[cities[i]][0];
-        var y = h.mesh.vxs[cities[i]][1];
+        var x = cities.positions[i][0];
+        var y = cities.positions[i][1];
         var text = cityNames[i];
         var size = i < nterrs ? params.renderer.fontSizes.city : params.renderer.fontSizes.town;
         var sx = 0.65 * size/1000 * text.length;

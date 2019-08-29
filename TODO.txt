@@ -1,13 +1,22 @@
 Implement cities
 	city can depend on civilisation
 	each region shall have its own building and color type
-implement path
+Change the city creation to contain more city types
+Change the city generation to be population / region based instead of capital based
+Change the region generation to be of different sizes or contain more than one big city (but only one capital)
+Add different cultures into the game, one per region at max
+Add cultures into the game
+	religion and influence (religious, cultural and expansion)
+	trade routes
+	naval, land, nomadic
+	language
+	population...
+Implement path
 Add footer with reference to github for contact
 Use jsoneditor to add checks on values and constrain the content
-	for the generator type
+	for the generators type
 	of the color type
-Add a label to display the progress
-Need a way to make some mountains bigger while remaining in the mountain areas
+Add a label to display the progress of the generation
 Re organize everything
 	features
 		cities
@@ -25,13 +34,17 @@ Try different type of generator for terrain
 	using noise
 	potentially different sampling for the coasts
 Add posibility to change water, terrain, biome and elevevation color,  per region
-possibility to change texture and renderings
-Change the city creation to contain more city types
-Change the city generation to be population / region based instead of capital based
-Change the region generation to be of different sizes or contain more than one big city (but only one capital)
+Possibility to change texture and renderings
+Add variation in the colors (non unified colors)
 Add lakes
-Add different cultures into the game, one per region at max
-
 long term:
 	possibility to drag and drop cities or other feature unto the map
 	possibility to edit the map
+Add posibility to create a battle map out of a given point
+	And export it to png with different grids
+	We can use the seed plus cells around the selected point
+Add different level of details
+Add a zoom that could increase details?
+Add way to export to a given png size
+Add way to export a higher detailled version of the map
+Graphical glitch when dealing with coasts/islands spreading farther than the border
