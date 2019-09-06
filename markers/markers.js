@@ -108,17 +108,62 @@ function getOakTree(base_point, tree_width, tree_height) {
     return tree;
 }
 
-function getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor, sizeRoof, flag_chance, color_wall, color_door, color_roof, color_flag) {
+
+// Things to be implemented here:
+// Roofs:
+// - Japanse style roof
+// - Flat roof
+// - Round roof
+// - inverted V roof (with a flexing point in the midle to switch between U type and the oposite)
+// - Round base roof
+// - Spike roof
+// Base:
+// - Round base
+// - Multi base
+// Windows:
+// - Cross shape square windows
+// - Share windows
+// - Large rectangular windows
+// - Round windows
+// Flags:
+// - Banners with similar vairnats as flags
+// - Double triangle shame
+// - Point Shape
+// - Triangle shape
+// Walls and stuff
+// - Wood walls
+// - Stone walls
+// - Stone walls with small towers
+// - Hill shape
+// Doors and bridge
+// Special buildings
+// - Forts
+// - Towers
+// - Multi roof buildinds
+// - Twin towers with bride
+// - Church or similar cultural building
+
+function getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor, sizeRoof, flag_chance, color_wall, color_wall_shaded, color_door, color_roof, color_roof_shaded, color_flag) {
     var building = {};
+    var rotation_level = randRangeFloat(5,10);
+
+    building.base_shaded = {paths: [ [ [base[0], base[1]], 
+                                       [base[0], base[1]-sizeFloor*numberFloors],
+                                       [base[0]-width/rotation_level, base[1]-sizeFloor*numberFloors-sizeFloor/rotation_level],
+                                       [base[0]-width/rotation_level, base[1]-sizeFloor/rotation_level],
+                                       [base[0], base[1]] ] ],
+                            fill_colors: color_wall_shaded,
+                            cardinal_tension: 0.9,
+                            stroke_sizes: 1};
 
     building.base = {paths: [ [ [base[0], base[1]], 
-                            [base[0], base[1]-sizeFloor*numberFloors],
-                            [base[0]+width, base[1]-sizeFloor*numberFloors],
-                            [base[0]+width, base[1]],
-                            [base[0], base[1]] ] ],
-                 fill_colors: color_wall,
-                 cardinal_tension: 0.9,
-                 stroke_sizes: 1};
+                                [base[0], base[1]-sizeFloor*numberFloors],
+                                [base[0]+width, base[1]-sizeFloor*numberFloors],
+                                [base[0]+width, base[1]],
+                                [base[0], base[1]] ] ],
+                     fill_colors: color_wall,
+                     cardinal_tension: 0.9,
+                     stroke_sizes: 1};
 
     building.windows = {paths: [], stroke_sizes: 1};
     for(var f=0; f<numberFloors; f++) {
@@ -138,6 +183,14 @@ function getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor,
                                           [base[0]+(w+1)*width/(windowPerFloor+1), base[1]-sizeFloor*(f+2/3)] ]);
         }
     }
+
+    building.roof_shaded = {paths: [ [ [base[0]+width/2, base[1]-sizeFloor*numberFloors-sizeRoof],
+                                       [base[0], base[1]-sizeFloor*numberFloors],
+                                       [base[0]-width/rotation_level, base[1]-sizeFloor*numberFloors-sizeFloor/rotation_level],
+                                       [base[0]+width/2, base[1]-sizeFloor*numberFloors-sizeRoof] ] ],
+                            fill_colors: color_roof_shaded,
+                            cardinal_tension: 0.9,
+                            stroke_sizes: 1};
 
     building.roof = {paths: [ [ [base[0]+width/2, base[1]-sizeFloor*numberFloors-sizeRoof],
                                 [base[0]+width, base[1]-sizeFloor*numberFloors],
@@ -179,6 +232,8 @@ function getCity(base_point, city_width, city_height, city_type, territory) {
     var color_wall = "#c4c3c2";
     var color_roof = "#faae70";
     var color_door = "#faae70";
+    var color_wall_shaded = "#9c9c9b";
+    var color_roof_shaded = "#c88b59";
     var color_flag = territory.color;
 
     for(var h=0; h<numberHouse; h++) {
@@ -188,10 +243,10 @@ function getCity(base_point, city_width, city_height, city_type, territory) {
         var numberFloors = randRangeInt(1, 2);
         var sizeFloor = randRangeFloat(city_height*2/20, city_height*3/20);
         var width = randRangeFloat(city_width*2/20, city_width*5/20) * (1+(city_type!="city"));
-        var base = [base_point[0]+h*city_width/numberHouse, base_point[1]+randRangeFloat(-city_height/100,city_height/100) ];
+        var base = [base_point[0]+h*city_width/numberHouse, base_point[1]+randRangeFloat(-city_height/25,city_height/25) ];
         var door = randRangeInt(-3*windowPerFloor,windowPerFloor-1); // 1/4 of them have doors
 
-        var building = getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor, sizeRoof, flag_chance, color_wall, color_door, color_roof, color_flag);
+        var building = getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor, sizeRoof, flag_chance, color_wall, color_wall_shaded, color_door, color_roof, color_roof_shaded, color_flag);
         buildings.push(building);
     }
 
@@ -203,9 +258,9 @@ function getCity(base_point, city_width, city_height, city_type, territory) {
         var numberFloors = randRangeInt(3, 4);
         var sizeFloor = randRangeFloat(city_height*2/20, city_height*3/20);
         var width = randRangeFloat(city_width*3/20, city_width*6/20) * (1+(city_type!="city"));
-        var base = [base_point[0]+width/2+randRangeFloat(0,1)*(city_width-width/2), base_point[1]+randRangeFloat(-city_height/100,0) ];
+        var base = [base_point[0]+width/2+randRangeFloat(0,1)*(city_width-width/2), base_point[1]+randRangeFloat(-city_height/25,0) ];
 
-        var building = getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor, sizeRoof, flag_chance, color_wall, color_door, color_roof, color_flag);
+        var building = getBuilding(base, width, door, sizeFloor, numberFloors, windowPerFloor, sizeRoof, flag_chance, color_wall, color_wall_shaded, color_door, color_roof, color_roof_shaded, color_flag);
         buildings.push(building);
     }
 
