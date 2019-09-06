@@ -12,3 +12,11 @@ function visualizeCities(svg, render) {
     }
     drawPoints(svg, 'city', points, radius, 'black', 5, 'white');
 }
+
+function visualizeRegions(svg, render) {
+    var colorMap = {};
+    for(var i=0; i<render.params.engine.population.numberTerritories; i++) {
+    	colorMap[i] = render.params.generated.territories[i].color;
+    }
+    visualizeVoronoiCustom(svg, render.terr, colorMap)
+}

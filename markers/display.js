@@ -155,7 +155,7 @@ function visualizeFeatures(svg, render, params) {
             /* for debug purpose
             drawCurvedPaths(TerrainSVG, 'cities', [[ [base[0], base[1]], [base[0]+width, base[1]] ]], 'cyan', 2, 1); //*/
 
-            var city = getCity( base, 0.05/(1+city_type), 0.05, city_type==0? "city": "town");
+            var city = getCity( base, 0.05/(1+city_type), 0.05, city_type==0? "city": "town", render.params.generated.territories[render.cities[c].territory]);
             objects.push(city);
 
         }

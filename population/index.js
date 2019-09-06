@@ -28,6 +28,7 @@ function placeCities(render) {
         var cityIndex = d3.scan(score, d3.descending);
         var city = { 
             index: cityIndex,
+            territory: null,
             position: [],
             displayPosition: []
         };
@@ -51,10 +52,8 @@ function placeTerritories(render) {
     for(var n=render.params.generated.territories.length; n<render.params.engine.population.numberTerritories; n++) {
         render.params.generated.territories.push({
             //language: null,
-            //name: "",
-            //capital: n,
-            //cities: [],
             name: "",
+            color: randomColor(),
             influence: randRangeFloat(2, 5)
             });
     }
@@ -106,6 +105,7 @@ function getTerritories(render) {
             });
         }
     }
+
     terr.mesh = h.mesh;
     return terr;
 }
@@ -143,6 +143,11 @@ function terrCenter(h, terr, city, landOnly) {
 function generateTerritories(render) {
     render.terr = getTerritories(render);
     render.borders = getBorders(render);
+
+    //update city territory
+    for (var i = 0; i < render.params.generated.cities.length; i++) {
+        render.cities[i].territory = render.terr[render.cities[i].index]
+    }
 }
 
 function generateNames(render) {

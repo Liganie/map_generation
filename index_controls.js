@@ -217,7 +217,7 @@ function TerrainDraw() {
         else if (selected_view == 'Erosion')    {visualizeVoronoi(TerrainSVG, erosionRate(terrainRender.h));}
         else if (selected_view == 'Biomes')     {visualizeVoronoi(TerrainSVG, terrainRender.biomes);}
         else if (selected_view == 'City Score') {visualizeVoronoi(TerrainSVG, terrainRender.score, d3.max(terrainRender.score) - 0.5);}
-        else if (selected_view == 'Regions')    {visualizeVoronoi(TerrainSVG, terrainRender.terr);}
+        else if (selected_view == 'Regions')    {visualizeRegions(TerrainSVG, terrainRender);}
         else if (selected_view == 'Coloring')   {visualizeTerrain(TerrainSVG, terrainRender, terrainParams);}
         else if (selected_view == 'Map')        {visualizeAsMap  (TerrainSVG, terrainRender, terrainParams);}
     }

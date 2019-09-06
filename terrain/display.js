@@ -24,6 +24,14 @@ function visualizeVoronoi(svg, field, lo, hi) {
     drawArea(svg, 'field', field.mesh.tris, colors);
 }
 
+function visualizeVoronoiCustom(svg, field, colorMap) {
+    var colors = [];
+    for(var i=0; i<field.mesh.tris.length; i++) {
+        colors[i] = colorMap[field[i]];
+    }
+    drawArea(svg, 'field', field.mesh.tris, colors);
+}
+
 function visualizeTerrain(svg, render, params) {
     var lo = 0;
     var hi = d3.max(render.h);
