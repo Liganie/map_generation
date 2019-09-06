@@ -11,11 +11,14 @@ Add cultures into the game
 	naval, land, nomadic
 	language
 	population...
+	manage conquests?
+	fotifications?
 Implement path
 Add footer with reference to github for contact
 Use jsoneditor to add checks on values and constrain the content
 	for the generators type
 	of the color type
+Ensure that sompe part of the jsoneditor are folded by default
 Add a label to display the progress of the generation
 Re organize everything
 	features

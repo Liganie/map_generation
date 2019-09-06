@@ -1,5 +1,10 @@
 "use strict";
 
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////                    TERAIN GENERATOR TOOLS                 ///////////////
+////////////////////////////////////////////////////////////////////////////////////
+
 function zero(mesh) {
     var z = [];
     for (var i = 0; i < mesh.vxs.length; i++) {
@@ -300,5 +305,52 @@ function cleanCoast(h, iters) {
         }
         h = newh;
     }
+    return h;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////                      TERAIN GENERATORS                    ///////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+
+function generateIsland(params) {
+    var mesh = generateGoodMesh(params.engine.baseGrid.numberPoints, params.engine.baseGrid.extent);
+    var h = add(
+            //slope(mesh, randomVector(4)),
+            cone(mesh, -1),
+            //pike(mesh, 2),
+            mountainsCentered(mesh, params.engine.terrainGenerator.islandParameters.baseLandmassNumber, 0.80),
+            //mountains(mesh, 50),
+            //forceBorders(mesh, 10),
+            //sinks(mesh, 50),
+            );
+
+    for (var i = 0; i < params.engine.terrainGenerator.islandParameters.relaxLevel; i++) {
+        h = relax(h);
+    }
+    h = peaky(h);
+    h = doErosion(h, randRangeFloat(0, 0.1), params.engine.terrainGenerator.islandParameters.erosionLevel);
+    h = setSeaLevel(h, randRangeFloat(params.engine.terrainGenerator.islandParameters.seaLevelRange[0], params.engine.terrainGenerator.islandParameters.seaLevelRange[1]));
+    if(params.engine.terrainGenerator.islandParameters.fillSinks) h = fillSinks(h);
+    h = cleanCoast(h, params.engine.terrainGenerator.islandParameters.coastSmoothingLevel);
+    return h;
+}
+
+function generateCoast(params) {
+    var mesh = generateGoodMesh(params.engine.baseGrid.numberPoints, params.engine.baseGrid.extent);
+    var h = add(
+            slope(mesh, randomVector(4)),
+            cone(mesh, randRangeFloat(-1, -1)),
+            mountains(mesh, params.engine.terrainGenerator.coastParameters.baseLandmassNumber)
+            );
+    for (var i = 0; i < params.engine.terrainGenerator.coastParameters.relaxLevel; i++) {
+        h = relax(h);
+    }
+    h = peaky(h);
+    h = doErosion(h, randRangeFloat(0, 0.1), params.engine.terrainGenerator.coastParameters.erosionLevel);
+    h = setSeaLevel(h, randRangeFloat(params.engine.terrainGenerator.coastParameters.seaLevelRange[0], params.engine.terrainGenerator.coastParameters.seaLevelRange[1]));
+    if(params.engine.terrainGenerator.coastParameters.fillSinks) h = fillSinks(h);
+    h = cleanCoast(h, params.engine.terrainGenerator.coastParameters.coastSmoothingLevel);
     return h;
 }

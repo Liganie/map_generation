@@ -41,25 +41,73 @@ function updateJsoneditor() {
     paramsEditor.expandAll();
 }
 
-var currentDictionnary = null;
-var currentDictionnaryGenerator = null;
-function parseJsonAndUpdate() {
-    terrainParams = JSON.parse(paramsEditor.getText());
-
-    // special case to regenerate the names if the name generator changes
-    if(currentDictionnary == null) currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
-    if(currentDictionnaryGenerator == null) currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
-    if(currentDictionnary !== terrainParams.engine.nameGenerator.markovParameters.dictionnary
-       || currentDictionnaryGenerator !== terrainParams.engine.nameGenerator.type) {
-        terrainRender.dictionnary = getNameGenerator(terrainParams);
-        currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
-        currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
+function strListIncludes(strList, substrList) {
+    if(substrList=="string") substrList = [substrList];
+    for(var key in strList) {
+        var result = true;
+        for(var substr in substrList) {
+            if(!strList[key].includes(substrList[substr])) result = false;
+        }
+        if(result) return true;
     }
+    return false;
+}
+
+function structureValuesDiff(struct1, struct2, prefix) {
+    //only compare the values of a given structure
+    if(typeof prefix == 'undefined') prefix =  "";
+    if(prefix.length!=0) prefix = prefix+".";
+
+    var diff = [];
+    for(var key in struct1) {
+        if(typeof(struct1[key])=="object") {
+            var child =  structureValuesDiff(struct1[key], struct2[key], prefix+key)
+            for (var e in child) {
+                diff.push(child[e])
+            }
+        }
+        else if(struct1[key]!=struct2[key]) {
+            //console.log(prefix+key+": "+struct1[key], struct2[key]); // For Debug purpose
+            diff.push(prefix+key);
+        }
+    }
+    return diff;
+}
+
+var changedParams = [];
+function parseJsonAndUpdate() {
+    var editorParams = JSON.parse(paramsEditor.getText());
+    changedParams = structureValuesDiff(terrainParams, editorParams );
+    terrainParams = editorParams;
 
     if(terrainRender!==null) {
         terrainRender.params = terrainParams;
         terrainOptions.drawTrigger = 'None';
         TerrainDraw();
+    }
+
+    // special case to regenerate the names if the name generator changes
+    if(strListIncludes(changedParams,"engine.nameGenerator")) {
+        terrainRender.dictionnary = getNameGenerator(terrainParams);
+        currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
+        currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
+        generateNames(terrainRender);
+        updateJsoneditor();
+        if(terrainOptions.cities) {
+            terrainOptions.drawTrigger = 'Cities';
+            TerrainDraw();
+        }
+    }
+
+    // Calculation and rendering only done when needed
+    if(strListIncludes(changedParams,["generated.territories","influence"])) {
+        var selected_view = d3.select('select').property('value'); // background coloring
+        generateTerritories(terrainRender);
+        if(selected_view=='Regions' || terrainOptions.cities) {
+            if(terrainOptions.cities) terrainOptions.drawTrigger = 'Cities';
+            if(selected_view=='Regions') terrainOptions.drawTrigger = 'Coloring';
+            TerrainDraw();
+        }
     }
 }
 
@@ -130,7 +178,7 @@ function TerrainDraw() {
     var selected_view = d3.select('select').property('value'); // background coloring
 
     if (terrainRender==null) { // Special case for the very first map creation
-        terrainRender = doTerrain(TerrainSVG, terrainParams);
+        terrainRender = generate(TerrainSVG, terrainParams);
         terrainOptions.drawTrigger = 'None';
         updateJsoneditor();
     }
@@ -211,12 +259,10 @@ TerrainDiv.append("button")
     .text("Generate new Map")
     .on("click", function () {
         if (terrainRender != null) seededRand = !terrainParams.engine.seed.changeOnGeneration ? seededRandom(currentSeed): seededRandom();
-        terrainRender = doTerrain(TerrainSVG, terrainParams);
+        terrainRender = generate(TerrainSVG, terrainParams);
         terrainOptions.drawTrigger = 'None';
         TerrainDraw();
         updateJsoneditor();
-        if(currentDictionnary == null) currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
-        if(currentDictionnaryGenerator == null) currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
     });
 
 var TerrainBut = TerrainDiv.append("button")
@@ -243,3 +289,24 @@ TerrainDiv.append("button")
         //TerrainSVG.selectAll("path.field").remove();
         saveSvg(TerrainSVG.node(), 'test.svg')
     });
+
+
+function generate(svg, params) {
+    var render = {
+        params: params
+    };
+    var width = svg.attr('width');
+    svg.attr('height', width * params.engine.baseGrid.extent.height / params.engine.baseGrid.extent.width);
+    svg.attr('viewBox', -1000 * params.engine.baseGrid.extent.width/2 + ' ' + 
+                        -1000 * params.engine.baseGrid.extent.height/2 + ' ' + 
+                        1000 * params.engine.baseGrid.extent.width + ' ' + 
+                        1000 * params.engine.baseGrid.extent.height);
+    svg.selectAll().remove();
+    render.dictionnary = getNameGenerator(params);
+    generateTerrain(render);
+    generatePopulation(render);
+
+    params = getColors(params);
+
+    return render;
+}

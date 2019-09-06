@@ -33586,7 +33586,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	exports.getColorCSS = function (color) {
 	  var ele = document.createElement('div');
-	  ele.style.color = color;
+	  if(color.startsWith("#")) ele.style.color = color; // FIX: To remove warnings, but limit parsing to HEX colors
 	  return ele.style.color.split(/\s+/).join('').toLowerCase() || null;
 	}
 
