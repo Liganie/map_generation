@@ -54,8 +54,10 @@ function placeTerritories(render) {
             //language: null,
             name: "",
             color: randomColor(),
-            influence: randRangeFloat(2, 5)
+            influence: randRangeFloat(2, 5),
+            building_types: getBuildingTypes()
             });
+        render.params.generated.territories[render.params.generated.territories.length-1].colors = getBuildingColors(render.params.generated.territories[render.params.generated.territories.length-1]);
     }
 }
 

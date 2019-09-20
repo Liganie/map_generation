@@ -16,10 +16,12 @@
     <h1>Testing stuff</h1>
     <div class="note">
 
+        <script src="parameterStructure.js"></script>
         <script src="D3/d3.js"></script>
         <script src="draw.js"></script>
         <script src="utils.js"></script>
         <script src="markers/markers.js"></script>
+        <script src="markers/city.js"></script>
 
         <script>
             function addPoint(P1, P2, factor) {
@@ -43,7 +45,7 @@
                     drawObject(svg, 'mountain', mountain);
 
                     var city_type = randRangeInt(0,1);
-                    var city = getCity([x, y], 0.1/(1+city_type), 0.1, city_type==0? "city": "town");
+                    var city = getCity([x, y], 0.1/(1+city_type), 0.1, city_type==0? "city": "town", undefined, terrainParams);
                     drawObject(svg, 'city', city);
 
                     var pineTree = getPineTree([x, y], 0.015, 0.03);

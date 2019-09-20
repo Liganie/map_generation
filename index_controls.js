@@ -41,39 +41,6 @@ function updateJsoneditor() {
     paramsEditor.expandAll();
 }
 
-function strListIncludes(strList, substrList) {
-    if(substrList=="string") substrList = [substrList];
-    for(var key in strList) {
-        var result = true;
-        for(var substr in substrList) {
-            if(!strList[key].includes(substrList[substr])) result = false;
-        }
-        if(result) return true;
-    }
-    return false;
-}
-
-function structureValuesDiff(struct1, struct2, prefix) {
-    //only compare the values of a given structure
-    if(typeof prefix == 'undefined') prefix =  "";
-    if(prefix.length!=0) prefix = prefix+".";
-
-    var diff = [];
-    for(var key in struct1) {
-        if(typeof(struct1[key])=="object") {
-            var child =  structureValuesDiff(struct1[key], struct2[key], prefix+key)
-            for (var e in child) {
-                diff.push(child[e])
-            }
-        }
-        else if(struct1[key]!=struct2[key]) {
-            //console.log(prefix+key+": "+struct1[key], struct2[key]); // For Debug purpose
-            diff.push(prefix+key);
-        }
-    }
-    return diff;
-}
-
 var changedParams = [];
 function parseJsonAndUpdate() {
     var editorParams = JSON.parse(paramsEditor.getText());
@@ -87,7 +54,7 @@ function parseJsonAndUpdate() {
     }
 
     // special case to regenerate the names if the name generator changes
-    if(strListIncludes(changedParams,"engine.nameGenerator")) {
+    if(strListInList(changedParams,"engine.nameGenerator")) {
         terrainRender.dictionnary = getNameGenerator(terrainParams);
         currentDictionnary = terrainParams.engine.nameGenerator.markovParameters.dictionnary;
         currentDictionnaryGenerator = terrainParams.engine.nameGenerator.type;
@@ -100,7 +67,7 @@ function parseJsonAndUpdate() {
     }
 
     // Calculation and rendering only done when needed
-    if(strListIncludes(changedParams,["generated.territories","influence"])) {
+    if(strListInList(changedParams,["generated.territories","influence"])) {
         var selected_view = d3.select('select').property('value'); // background coloring
         generateTerritories(terrainRender);
         if(selected_view=='Regions' || terrainOptions.cities) {

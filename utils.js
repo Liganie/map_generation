@@ -73,6 +73,56 @@ function saveSvg(svgEl, name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+//////////                       STRING HANDLING                     ///////////////
+////////////////////////////////////////////////////////////////////////////////////
+// This is used to check if a string is in a given array
+
+function strListIncludes(str, strList) {
+    for(var i=0; i<strList.length; i++) {
+        if(strList[i].includes(str)) return true;
+    }
+    return false;
+}
+
+function strListInList(strList, substrList) {
+    if(substrList=="string") substrList = [substrList];
+    for(var key in strList) {
+        var result = true;
+        for(var substr in substrList) {
+            if(!strList[key].includes(substrList[substr])) result = false;
+        }
+        if(result) return true;
+    }
+    return false;
+}
+
+function structureValuesDiff(struct1, struct2, prefix) {
+    //only compare the values of a given structure
+    if(typeof prefix == 'undefined') prefix =  "";
+    if(prefix.length!=0) prefix = prefix+".";
+
+    var diff = [];
+    for(var key in struct1) {
+        if(typeof(struct1[key])=="object") {
+            var child =  structureValuesDiff(struct1[key], struct2[key], prefix+key)
+            for (var e in child) {
+                diff.push(child[e])
+            }
+        }
+        else if(struct1[key]!=struct2[key]) {
+            //console.log(prefix+key+": "+struct1[key], struct2[key]); // For Debug purpose
+            diff.push(prefix+key);
+        }
+    }
+    return diff;
+}
+
+function toHexString(color) {
+    color = d3.color(color);
+    return '#'+('0'+color.r.toString(16)).slice(-2)+('0'+color.g.toString(16)).slice(-2)+('0'+color.b.toString(16)).slice(-2);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
 //////////                   RANDOM NUMBER HANDLING                  ///////////////
 ////////////////////////////////////////////////////////////////////////////////////
 // Javascript does not natively support seeding in Math.random()
@@ -119,6 +169,20 @@ function randRangeTris(tris) {
             tris[0][1] + range*x*v1[1] + range*(1-x)*v2[1] ];
 }
 
+function randMap(map) {
+    var sum = 0;
+    for(key in map) {
+        sum += map[key];
+    }
+    if(sum<=0) return null;
+    var r = seededRand();
+    for(key in map) {
+        r -= map[key]/sum;
+        if(r<0) return key;
+    }
+    return key; // This shall never happen
+}
+
 var rnorm = (function () {
     var z2 = null;
     function rnorm() {
@@ -154,8 +218,16 @@ function randomVector(scale) {
     return [scale * rnorm(), scale * rnorm()];
 }
 
-var seededRand;
+function colorVariation(color, level) {
+    var scolor = randomColor({hue: color, count: 1});
+    var gradient = d3.scaleLinear()
+      .domain([0, level])
+      .interpolate(d3.interpolateHcl)
+      .range([d3.rgb(color), d3.rgb(scolor)]);
+    return toHexString(gradient(1));
+}
 
+var seededRand;
 
 ////////////////////////////////////////////////////////////////////////////////////
 //////////                    RANDOM COLOR HANDLING                  ///////////////

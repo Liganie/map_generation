@@ -1,12 +1,8 @@
-Implement cities
-	city can depend on civilisation
-	each region shall have its own building and color type
-Change the city creation to contain more city types
 Change the city generation to be population / region based instead of capital based
 Change the region generation to be of different sizes or contain more than one big city (but only one capital)
-Add different cultures into the game, one per region at max
+Add posibility to change water, terrain, biome and elevevation color,  per region/biome
 Add cultures into the game
-	religion and influence (religious, cultural and expansion)
+	religion and cultural
 	trade routes
 	naval, land, nomadic
 	language
@@ -14,21 +10,13 @@ Add cultures into the game
 	manage conquests?
 	fotifications?
 Implement path
+Correct montain shade limit as it sometimes spill over
 Add footer with reference to github for contact
 Use jsoneditor to add checks on values and constrain the content
 	for the generators type
 	of the color type
-Ensure that sompe part of the jsoneditor are folded by default
+Ensure that some part of the jsoneditor are folded by default
 Add a label to display the progress of the generation
-Re organize everything
-	features
-		cities
-		mountains
-		rivers
-		borders
-	terrain
-		coast
-		terrain itself
 Try different type of generator for names
 	Add different prefix or suffix to names depending on the culture (dungon/fort for instance)
 	Potentially add a generator using adjectives / name like ironhaven or sandcity
@@ -36,7 +24,6 @@ Try different type of generator for terrain
 	using polygons
 	using noise
 	potentially different sampling for the coasts
-Add posibility to change water, terrain, biome and elevevation color,  per region
 Possibility to change texture and renderings
 Add variation in the colors (non unified colors)
 Add lakes

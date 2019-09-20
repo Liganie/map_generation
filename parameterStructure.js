@@ -95,7 +95,48 @@ var terrainParams = {
         hills: {},
         plains: {},
         cities: {
-            doCities: true
+            doCities: true,
+            strokeSize: 0.75,
+            city: {
+                numberBuildings: [8, 12],
+                numberFeatures: [1, 3]
+            },
+            town: {
+                numberBuildings: [3, 6],
+                numberFeatures: [0, 1]
+            },
+            building: {
+                width: [2/20, 3/20],
+                floors: [1, 2],
+                heigthFloor : [2/20, 3/20],
+                heightRoof: [1/20, 3/20],
+                windowsPerFloor: [1, 2],
+                flagChance: 0.1
+            },
+            feature: {
+                width: [3/20, 6/20],
+                floors: [3, 4],
+                heigthFloor : [2/20, 3/20],
+                heightRoof: [2/20, 4/20],
+                windowsPerFloor: [1, 3],
+                flagChance: 0.8
+            },
+            flagScaling: 1.0,
+            colors: {
+                wall: {
+                    base: "#c4c3c2",
+                    shade: "#9c9c9b"
+                },
+                roof: {
+                    base: "#faae70",
+                    shade: "#c88b59"
+                },
+                structure: "#faae70",
+                door: "#faae70",
+                curtain: "#ff5c33",
+                window: "#8b9c9f",
+                flag: "#ff0000",
+            }
         }
     },
     generated: {}

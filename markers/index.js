@@ -1,5 +1,6 @@
 include('markers/markers.js');
 include('markers/display.js');
+include('markers/city.js');
 
 
 function getTree(base_point, tree_width, tree_height, params, types) {
