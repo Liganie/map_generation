@@ -77,11 +77,38 @@ function saveSvg(svgEl, name) {
 ////////////////////////////////////////////////////////////////////////////////////
 // This is used to check if a string is in a given array
 
+
+function strListExclude(strs, strList) {
+    // any string in the second are removed from the first
+    var result = [];
+    for(var i in strs) {
+        if(!strListIncludes(strs[i], strList)) result.push(strs[i])
+    }
+    return result;
+}
+
 function strListIncludes(str, strList) {
+    // the string is in the list
     for(var i=0; i<strList.length; i++) {
         if(strList[i].includes(str)) return true;
     }
     return false;
+}
+
+function strListIncludesAny(strs, strList) {
+    // any string of the first list are in the second
+    for(var i=0; i<strs.length; i++) {
+        if(strListIncludes(strs[i], strList)) return true;
+    }
+    return false;
+}
+
+function strListIncludesAll(strs, strList) {
+    // all strings of the first list are in the second
+    for(var i=0; i<strs.length; i++) {
+        if(!strListIncludes(strs[i], strList)) return false;
+    }
+    return true;
 }
 
 function strListInList(strList, substrList) {
@@ -181,6 +208,45 @@ function randMap(map) {
         if(r<0) return key;
     }
     return key; // This shall never happen
+}
+
+function randTable(table, keywords, filter) {
+    //Table is assumed to be [key, descriptors, weight]
+
+    // items that do not have any of the keywords are left out
+    if(keywords) {
+        if(typeof(keywords)=="string") {
+            keywords = keywords.split(' ');
+        }
+        table = table.slice(); //we need to copy the table to splice
+        for(var i=table.length-1; i>=0; i--) {
+            if(!strListIncludesAny(keywords, table[i][1].split(" "))) table.splice(i,1);
+        }
+    }
+
+    // items that do not have all of the filter parameters are left out
+    if(filter) {
+        if(typeof(filter)=="string") {
+            filter = filter.split(' ');
+        }
+        table = table.slice(); //we need to copy the table to splice
+        for(var i=table.length-1; i>=0; i--) {
+            if(!strListIncludesAll(filter, table[i][1].split(" "))) table.splice(i,1);
+        }
+    }
+
+    // Random selection
+    var sum = 0;
+    for(key in table) {
+        sum += table[key][2];
+    }
+    if(sum<=0) return '';
+    var r = seededRand();
+    for(key in table) {
+        r -= table[key][2]/sum;
+        if(r<0) return table[key][0];
+    }
+    return table[key][0]; // This shall never happen
 }
 
 var rnorm = (function () {

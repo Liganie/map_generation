@@ -6,31 +6,30 @@
         <meta content="text/html; charset=UTF-8" name="Content-Type">
         <link rel="stylesheet" href="style.css" />
         <link href='https://fonts.googleapis.com/css?family=Raleway:400,700' rel='stylesheet' type='text/css'>
-        <title>Markov testing</title>
+        <title>Characted Generation testing</title>
     </head>
 
     <body>
         <div id="content">
             <div class="splash">
                 
-                <h1>Generating names</h1>
+                <h1>Generating Chararcter and Items</h1>
                 <div class="note">
                     <script src="D3/d3.js"></script>
 
-                    <div class="example" id="nameGeneratorView">
-                        <textarea id="oMarkov" rows="15" cols="50"></textarea>
-                        </br>
-                        <button type="button" onclick="mewoUpdate()">Mewo names</button>
-                        <button type="button" onclick="markovUpdate()">Markov names</button>  </br>
+                    <div class="example" id="classSelectorView">
+                        <h3 align="left">Select your class(es):</h3>
+                    </div>
+
+                    <div class="example" id="charGeneratorView">
+                        <button type="button" onclick="generateCharacter()">Generate</button>
                     </div>
 
                     <script src="utils.js"></script>
-                    <script src="names/index.js"></script>
+                    <script src="chargen/index.js"></script>
                     <script>
                         initialize(); //to ensure debug is possible
                     </script>
-
-                    </div>
                 </div>
             </div>
         </div>
